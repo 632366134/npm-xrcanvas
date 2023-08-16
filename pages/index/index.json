@@ -1,0 +1,5 @@
+{
+    "usingComponents": {
+        "npm-xrcanvas":"/src/xr-canvas"
+    }
+}
