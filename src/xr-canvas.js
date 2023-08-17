@@ -3,6 +3,8 @@ const STATE = {
     MOVE: 0,
     ZOOM_OR_PAN: 1
 }
+import './remove-black';
+import {encode} from 'base64-arraybuffer'
 Component({
     properties: {
         gltfListRaw: {
@@ -61,10 +63,12 @@ Component({
                     if (active) {
                         const video = this.scene.assets.getAsset('video-texture', markerInfo.projectCode);
                         this.videoTRS = this.scene.getElementById(`videoNode-${markerInfo.projectCode}`)?.getComponent(this.xrFrameSystem.Transform)
-                        if (this.videoTRS) {
-                            console.log(this.videoTRS, '123')
+                        console.log(markerInfo.projectCode, this.videoTRS, video, '123')
+
+                        if (this.videoTRS && video) {
+                            console.log('havevideo')
                             const d = video.width / video.height
-                            this.videoTRS.scale.x *= d
+                            this.videoTRS.scale.x = 1 * d
 
                             video.play()
                         }
@@ -80,7 +84,9 @@ Component({
                         const ARSystem = this.scene.getElementById(`xr-scene`).getComponent(this.xrFrameSystem.ARSystem)
                         const arr = ARSystem.getARRawData()
                         console.log(arr)
-                       
+                        let encodeStr =encode(arr.uvBuffer); //加密
+                        console.log(encodeStr);
+
                     }
 
                 }
@@ -226,16 +232,16 @@ Component({
         }) {
             console.log('assets loaded', detail.value);
             this.setData({
-                loaded: true
-            });
+                arReady: true
+            })
         },
         handleARReady: function ({
             detail
         }) {
             console.log('arReady', detail);
-            this.setData({
-                arReady: true
-            })
+            // this.setData({
+            //     arReady: true
+            // })
         }
     }
 })

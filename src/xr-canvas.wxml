@@ -1,8 +1,8 @@
 <xr-scene ar-system="modes:Marker" id="xr-scene" bind:ready="handleReady" bind:ar-ready="handleARReady">
     <xr-assets bind:progress="handleAssetsProgress" bind:loaded="handleAssetsLoaded">
-    
+
         <xr-asset-load asset-id="gltf-{{item.id}}" wx:for="{{gltfList}}" type="gltf" src="{{item.url}}" />
-      
+        <xr-asset-material asset-id="removeBlack-mat" effect="removeBlack" />
         <xr-asset-load wx:for="{{videoList}}" asset-id="{{item.projectCode}}" type="video-texture" src="{{item.url}}" options="loop:true,abortAudio: false" />
         <xr-asset-material wx:for="{{videoList}}" asset-id="{{item.id}}-video-mat" uniforms="u_baseColorMap: video-{{item.projectCode}}" />
     </xr-assets>
@@ -17,15 +17,15 @@
                         </xr-node>
                     </xr-node>
                 </xr-node>
-                <xr-mesh node-id="floor-plane" position="0 -1 0" rotation="0 0 0" scale="10 1 10" geometry="plane" uniforms="u_baseColorFactor:1 1 1 1"></xr-mesh>
-                <xr-mesh node-id="video-item" position="0 0 0" rotation="90 0 0" scale="2 2 2" geometry="plane" material="removeBlack-mat" uniforms="u_videoMap: video-test2" states="renderQueue:2500"></xr-mesh>
+
             </xr-node>
-         
+
             <xr-node wx:for="{{videoList}}">
                 <xr-node rotation="{{item.rotation[0]}} {{item.rotation[1]}} {{item.rotation[2]}}" position="{{item.position[0]}} {{item.position[1]}} {{item.position[2]}}" scale="{{item.scale[0]}} {{item.scale[1]}} {{item.scale[2]}}" wx:if="{{item.projectCode===obsItem.projectCode}}">
                     <xr-node id="videoNode-{{item.projectCode}}">
-                        <xr-mesh node-id="mesh-plane-{{item.id}}" geometry="plane" material="{{item.id}}-video-mat">
+                        <xr-mesh wx:if="{{item.opacity}}" node-id="mesh-plane-{{item.id}}" geometry="plane" material="removeBlack-mat" uniforms="u_videoMap:video-{{item.projectCode}}" states="renderQueue:2500">
                         </xr-mesh>
+                        <xr-mesh wx:else node-id="mesh-plane-{{item.id}}" geometry="plane" material="{{item.id}}-video-mat"></xr-mesh>
                     </xr-node>
                 </xr-node>
 
