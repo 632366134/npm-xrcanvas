@@ -1,20 +1,21 @@
 <xr-scene ar-system="modes:Marker" id="xr-scene" bind:ready="handleReady" bind:ar-ready="handleARReady">
     <xr-assets bind:progress="handleAssetsProgress" bind:loaded="handleAssetsLoaded">
-
         <xr-asset-load asset-id="gltf-{{item.id}}" wx:for="{{gltfList}}" type="gltf" src="{{item.url}}" />
         <xr-asset-material asset-id="removeBlack-mat" effect="removeBlack" />
         <xr-asset-load wx:for="{{videoList}}" asset-id="{{item.projectCode}}" type="video-texture" src="{{item.url}}" options="loop:true,abortAudio: false" />
         <xr-asset-material wx:for="{{videoList}}" asset-id="{{item.id}}-video-mat" uniforms="u_baseColorMap: video-{{item.projectCode}}" />
+        <xr-asset-load wx:for="{{keyframeList}}" asset-id="keyframe-{{item.id}}" type="keyframe" src="{{item.keyframe}}" />
     </xr-assets>
     <xr-env env-data="xr-frame-team-workspace-day" />
     <xr-node wx:if="{{arReady}}">
         <xr-ar-tracker bind:ar-tracker-switch="handleTrackerSwitch" mode="Marker" src="{{obsItem.url}}" wx:for="{{obsList}}" wx:for-item="obsItem" id="marker-{{obsItem.projectCode}}">
             <xr-node wx:for="{{gltfList}}">
                 <xr-node wx:if="{{item.projectCode===obsItem.projectCode}}">
-                    <xr-node rotation="{{item.rotation[0]}} {{item.rotation[1]}} {{item.rotation[2]}}" position="{{item.position[0]}} {{item.position[1]}} {{item.position[2]}}" scale="{{item.scale[0]}} {{item.scale[1]}} {{item.scale[2]}}">
-                        <xr-node id="gltfNode-{{item.projectCode}}">
-                            <xr-gltf id="{{item.projectCode}}" anim-autoplay node-id="gltf-{{item.id}}" model="gltf-{{item.id}}"></xr-gltf>
-                        </xr-node>
+                    <xr-node  rotation="{{item.rotation[0]}} {{item.rotation[1]}} {{item.rotation[2]}}" position="{{item.position[0]}} {{item.position[1]}} {{item.position[2]}}" scale="{{item.scale[0]}} {{item.scale[1]}} {{item.scale[2]}}">
+                        <xr-node   id="gltfNode-{{item.projectCode}}">
+                        <xr-node anim-keyframe="keyframe-{{item.id}}" anim-autoplay="clip:{{item.name}}">
+                            <xr-gltf  id="{{item.projectCode}}" anim-autoplay node-id="gltf-{{item.id}}" model="gltf-{{item.id}}"></xr-gltf>
+                        </xr-node></xr-node>
                     </xr-node>
                 </xr-node>
 

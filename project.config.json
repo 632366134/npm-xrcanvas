@@ -1,20 +1,48 @@
 {
     "compileType": "miniprogram",
+    "miniprogramRoot": "miniprogram/",
     "setting": {
-        "coverView": true,
+        "urlCheck": true,
         "es6": true,
-        "postcss": true,
-        "minified": true,
         "enhance": true,
+        "postcss": true,
+        "preloadBackgroundData": false,
+        "minified": true,
+        "newFeature": false,
+        "coverView": true,
+        "nodeModules": false,
+        "autoAudits": false,
         "showShadowRootInWxmlPanel": true,
-        "packNpmRelationList": [],
+        "scopeDataCheck": false,
+        "uglifyFileName": false,
+        "checkInvalidKey": true,
+        "checkSiteMap": true,
+        "uploadWithSourceMap": true,
+        "compileHotReLoad": false,
+        "lazyloadPlaceholderEnable": false,
+        "useMultiFrameRuntime": true,
         "babelSetting": {
             "ignore": [],
             "disablePlugins": [],
             "outputPath": ""
         },
-        "ignoreUploadUnusedFiles": true,
-        "condition": true
+        "useIsolateContext": true,
+        "userConfirmedUseIsolateContext": true,
+        "userConfirmedBundleSwitch": false,
+        "packNpmManually": false,
+        "packNpmRelationList": [],
+        "minifyWXSS": true,
+        "disableUseStrict": false,
+        "minifyWXML": true,
+        "showES6CompileOption": false,
+        "useCompilerPlugins": [
+            "typescript"
+        ],
+        "ignoreDevUnusedFiles": false,
+        "ignoreUploadUnusedFiles": false,
+        "useStaticServer": true,
+        "condition": false,
+        "skylineRenderEnable": false
     },
     "condition": {},
     "editorSetting": {
@@ -27,5 +55,6 @@
         "include": []
     },
     "appid": "wxc781638e173f5fda",
-    "projectname": "npm-xrcanvas"
+    "projectname": "npm-xrcanvas",
+    "srcMiniprogramRoot": "miniprogram/"
 }

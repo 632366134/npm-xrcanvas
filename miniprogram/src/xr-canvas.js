@@ -4,7 +4,6 @@ const STATE = {
     ZOOM_OR_PAN: 1
 }
 import './remove-black';
-import {encode} from 'base64-arraybuffer'
 Component({
     properties: {
         gltfListRaw: {
@@ -19,6 +18,10 @@ Component({
             type: Array,
             default: []
         },
+        keyframeListRaw:{
+            type:Array,
+            default:[]
+        }
     },
     observers: {
         gltfListRaw(newVal) {
@@ -36,6 +39,11 @@ Component({
                 obsList: newVal,
             })
         },
+        keyframeListRaw(newVal){
+            this.setData({
+                keyframeList: newVal,
+            })
+        }
     },
     data: {
         loaded: false,
@@ -80,12 +88,12 @@ Component({
 
                         }
 
-                        console.log(this.xrFrameSystem)
-                        const ARSystem = this.scene.getElementById(`xr-scene`).getComponent(this.xrFrameSystem.ARSystem)
-                        const arr = ARSystem.getARRawData()
-                        console.log(arr)
-                        let encodeStr =encode(arr.uvBuffer); //加密
-                        console.log(encodeStr);
+                        // console.log(this.xrFrameSystem)
+                        // const ARSystem = this.scene.getElementById(`xr-scene`).getComponent(this.xrFrameSystem.ARSystem)
+                        // const arr = ARSystem.getARRawData()
+                        // console.log(arr)
+                        // let encodeStr =encode(arr.uvBuffer); //加密
+                        // console.log(encodeStr);
 
                     }
 
