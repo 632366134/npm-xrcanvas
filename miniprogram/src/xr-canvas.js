@@ -202,7 +202,7 @@ Component({
                         console.log(arr)
                         // let encodeStr =encode(arr.uvBuffer); //加密
                         // console.log(encodeStr);
-                        this.triggerEvent('arr',arr)
+                        // this.triggerEvent('arr',arr)
 
                     } else {
                         this.video && this.video.pause()

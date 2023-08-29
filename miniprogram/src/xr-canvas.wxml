@@ -13,7 +13,7 @@
                     <xr-node rotation="{{item.rotation[0]}} {{item.rotation[1]}} {{item.rotation[2]}}" position="{{item.position[0]}} {{item.position[1]}} {{item.position[2]}}" scale="{{item.scale[0]}} {{item.scale[1]}} {{item.scale[2]}}">
                         <xr-node id="gltfNode-{{item.projectCode}}">
                             <xr-node visible="{{gltfFlag}}" id="keyframe-{{item.id}}" anim-keyframe="keyframe-{{item.id}}" anim-clipmap="{{item.name}}{{item.name}}">
-                                <xr-gltf  data-item="{{item}}" bind:touch-shape="goPriview" id="{{item.projectCode}}"  node-id="gltf-{{item.id}}" model="gltf-{{item.id}}"></xr-gltf>
+                                <xr-gltf  data-item="{{item}}" bind:touch-shape="goPriview" id="{{item.projectCode}}" node-id="gltf-{{item.id}}" model="gltf-{{item.id}}"></xr-gltf>
                             </xr-node>
                         </xr-node>
                     </xr-node>
@@ -36,7 +36,9 @@
         <xr-camera id="camera" node-id="camera" position="0 0 0" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera></xr-camera>
     </xr-node>
     <xr-node node-id="lights">
-        <xr-light type="ambient" color="1 1 1" intensity="0.8" />
-        <xr-light type="directional" rotation="120 -40 0" color="1 1 1" intensity="3" />
+        <xr-light type="ambient" color="1 1 1" intensity="0.1" />
+    <xr-light type="directional" position="0 3 0" rotation="0 0 0" color="1 1 1" intensity="2.5" cast-shadow />
+    <xr-light type="directional" rotation="40 70 0" color="1 1 1" intensity="2" cast-shadow />
+    <xr-light type="directional" rotation="40 250 0" color="1 1 1" intensity="2" cast-shadow />
     </xr-node>
 </xr-scene>

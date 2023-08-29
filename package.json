@@ -13,5 +13,6 @@
   "author": "123",
   "license": "ISC",
   "dependencies": {
+    "jpeg-js": "^0.4.4"
   }
 }

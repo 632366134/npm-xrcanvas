@@ -9,6 +9,13 @@
         "navigationBarTextStyle": "black",
         "navigationStyle": "custom"
     },
+    "subpackages": [
+        {
+          "root": "packageA",
+          "pages": [
+            "pages/cat"
+          ]
+        }],
     "style": "v2",
     "rendererOptions": {
         "skyline": {
