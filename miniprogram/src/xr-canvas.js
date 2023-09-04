@@ -4,8 +4,13 @@ const STATE = {
     ZOOM_OR_PAN: 1
 }
 let prevValue;
-
+import {
+    arRawDataToRGB
+} from './yuv'
 import './remove-black';
+import {
+    homeRecognizeYUV
+} from '../utils/utils'
 Component({
     properties: {
         gltfListRaw: {
@@ -21,6 +26,10 @@ Component({
             default: []
         },
         keyframeListRaw: {
+            type: Array,
+            default: []
+        },
+        imageListRaw: {
             type: Array,
             default: []
         }
@@ -45,6 +54,11 @@ Component({
             this.setData({
                 keyframeList: newVal,
             })
+        },
+        imageListRaw(newVal) {
+            this.setData({
+                imageList: newVal,
+            })
         }
     },
 
@@ -55,6 +69,7 @@ Component({
     },
     lifetimes: {
         attached() {
+            console.log(this.width)
             console.log('data', this.data)
         },
         detached() {
@@ -157,6 +172,19 @@ Component({
                 if (element === markerTracker) {
 
                     if (active) {
+                        const {
+                            rgbArray,
+                            width,
+                            height
+                        } = await arRawDataToRGB(this.scene)
+                        console.log(rgbArray, 'rgbArray')
+
+                        const a = await homeRecognizeYUV({
+                            rgb_array: rgbArray,
+                            width,
+                            height
+                        })
+                        console.log(a)
                         const gltfId = this.data.gltfList.filter(v => {
                             return v.projectCode === markerInfo.projectCode
                         })
@@ -195,14 +223,6 @@ Component({
                         } else {
                             await addGltfAnim()
                         }
-                        // this.detached2()
-                        // console.log(this.xrFrameSystem)
-                        const ARSystem = this.scene.getElementById(`xr-scene`).getComponent(this.xrFrameSystem.ARSystem)
-                        const arr = ARSystem.getARRawData()
-                        console.log(arr)
-                        // let encodeStr =encode(arr.uvBuffer); //加密
-                        // console.log(encodeStr);
-                        // this.triggerEvent('arr',arr)
 
                     } else {
                         this.video && this.video.pause()
@@ -391,52 +411,5 @@ Component({
             //     arReady: true
             // })
         },
-        convertYUV420ToDataURL(yuv420ArrayBuffer, width, height) {
-            const uint8Array = new Uint8Array(yuv420ArrayBuffer);
-
-            const offscreenCanvas = wx.createOffscreenCanvas(width, height);
-            const canvasContext = offscreenCanvas.getContext('webgl');
-
-            function yuv420ToRgb(y, u, v) {
-                const r = y + 1.13983 * v;
-                const g = y - 0.39465 * u - 0.58060 * v;
-                const b = y + 2.03211 * u;
-                return [r, g, b];
-            }
-
-            const imageData = offscreenCanvas.createImageData(width, height);
-            let dataIndex = 0;
-            for (let i = 0; i < uint8Array.length; i += 1.5) {
-                const y = uint8Array[i];
-                const u = uint8Array[Math.floor(i / 4) + width * height];
-                const v = uint8Array[Math.floor(i / 4) + width * height * 1.25];
-                const [r, g, b] = yuv420ToRgb(y, u, v);
-
-                imageData.data[dataIndex++] = r;
-                imageData.data[dataIndex++] = g;
-                imageData.data[dataIndex++] = b;
-                imageData.data[dataIndex++] = 255;
-
-                if (i % (width * 1.5) === 0 && i > 0) {
-                    dataIndex += (width - 1) * 4;
-                }
-            }
-
-            canvasContext.putImageData(imageData, 0, 0);
-
-            return new Promise((resolve, reject) => {
-                offscreenCanvas.toTempFilePath({
-                    fileType: 'jpg', // 根据需要选择图片格式
-                    success: (res) => {
-                        resolve(res.tempFilePath);
-                    },
-                    fail: (error) => {
-                        reject(error);
-                    },
-                });
-            });
-        }
-
-
     }
 })

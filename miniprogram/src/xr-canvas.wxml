@@ -5,6 +5,8 @@
         <xr-asset-load wx:for="{{videoList}}" wx:key="{{item.id}}" asset-id="{{item.projectCode}}" type="video-texture" src="{{item.url}}" options="loop:true,abortAudio: false" />
         <xr-asset-material wx:for="{{videoList}}" wx:key="{{item.id}}" asset-id="{{item.id}}-video-mat" uniforms="u_baseColorMap: video-{{item.projectCode}}" />
         <xr-asset-load wx:for="{{keyframeList}}" wx:key="{{item.id}}" asset-id="keyframe-{{item.parentId}}" type="keyframe" src="{{item.keyframe}}" />
+        <xr-asset-load wx:for="{{imageList}}" wx:key="{{item.id}}" type="texture" asset-id="image-{{item.projectCode}}" src="{{item.url}}" />
+
     </xr-assets>
     <xr-node wx:if="{{arReady}}">
         <xr-ar-tracker bind:ar-tracker-switch="handleTrackerSwitch" mode="Marker" src="{{obsItem.url}}" wx:key="{{obsItem.id}}" wx:for="{{obsList}}" wx:for-item="obsItem" id="marker-{{obsItem.projectCode}}">
@@ -13,7 +15,7 @@
                     <xr-node rotation="{{item.rotation[0]}} {{item.rotation[1]}} {{item.rotation[2]}}" position="{{item.position[0]}} {{item.position[1]}} {{item.position[2]}}" scale="{{item.scale[0]}} {{item.scale[1]}} {{item.scale[2]}}">
                         <xr-node id="gltfNode-{{item.projectCode}}">
                             <xr-node visible="{{gltfFlag}}" id="keyframe-{{item.id}}" anim-keyframe="keyframe-{{item.id}}" anim-clipmap="{{item.name}}{{item.name}}">
-                                <xr-gltf  data-item="{{item}}" bind:touch-shape="goPriview" id="{{item.projectCode}}" node-id="gltf-{{item.id}}" model="gltf-{{item.id}}"></xr-gltf>
+                                <xr-gltf data-item="{{item}}" bind:touch-shape="goPriview" id="{{item.projectCode}}" node-id="gltf-{{item.id}}" model="gltf-{{item.id}}"></xr-gltf>
                             </xr-node>
                         </xr-node>
                     </xr-node>
@@ -31,14 +33,19 @@
                 </xr-node>
 
             </xr-node>
+            <xr-node wx:key="{{item.id}}" wx:for="{{imageList}}">
+                <xr-node rotation="{{item.rotation[0]}} {{item.rotation[1]}} {{item.rotation[2]}}" position="{{item.position[0]}} {{item.position[1]}} {{item.position[2]}}" scale="{{item.scale[0]}} {{item.scale[1]}} {{item.scale[2]}}" wx:if="{{item.projectCode===obsItem.projectCode}}">
+                    <xr-mesh   geometry="plane" uniforms="u_baseColorMap: image-{{item.projectCode}}" states="cullOn: false, alphaMode: BLEND,renderQueue: 2500"></xr-mesh>
+                </xr-node>
 
+            </xr-node>
         </xr-ar-tracker>
         <xr-camera id="camera" node-id="camera" position="0 0 0" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera></xr-camera>
     </xr-node>
     <xr-node node-id="lights">
         <xr-light type="ambient" color="1 1 1" intensity="0.1" />
-    <xr-light type="directional" position="0 3 0" rotation="0 0 0" color="1 1 1" intensity="2.5" cast-shadow />
-    <xr-light type="directional" rotation="40 70 0" color="1 1 1" intensity="2" cast-shadow />
-    <xr-light type="directional" rotation="40 250 0" color="1 1 1" intensity="2" cast-shadow />
+        <xr-light type="directional" position="0 3 0" rotation="0 0 0" color="1 1 1" intensity="2.5" cast-shadow />
+        <xr-light type="directional" rotation="40 70 0" color="1 1 1" intensity="2" cast-shadow />
+        <xr-light type="directional" rotation="40 250 0" color="1 1 1" intensity="2" cast-shadow />
     </xr-node>
 </xr-scene>

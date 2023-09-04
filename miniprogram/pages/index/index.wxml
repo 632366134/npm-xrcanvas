@@ -1,9 +1,6 @@
 <view>
-    <npm-xrcanvas wx:if="{{xrFlag}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;" gltfListRaw="{{gltfListRaw}}" videoListRaw="{{videoListRaw}}" obsListRaw="{{obsListRaw}}" keyframeListRaw="{{keyframeListRaw}}" bind:modalFlagTap="tapFuction" bind:arr="arr"></npm-xrcanvas>
-    <!-- <view style="display:block;position: fixed; top:50%;left: 50%;width: 20px;height: 20px;z-index: 99999999;color: rgb(240, 72, 72);">{{ count }}</view> -->
-  <!-- canvas.wxml -->
-  <canvas id="canvas" style="width:400px; height: 400px;" canvas-id="canvas"></canvas>
+    <npm-xrcanvas wx:if="{{xrFlag}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;" gltfListRaw="{{gltfListRaw}}" imageListRaw="{{imageListRaw}}" videoListRaw="{{videoListRaw}}" obsListRaw="{{obsListRaw}}" keyframeListRaw="{{keyframeListRaw}}" bind:modalFlagTap="tapFuction" bind:arr="arr"></npm-xrcanvas>
 
-  <image style="width:430rpx;height:430rpx;position: fixed;top: 0;left: 0;z-index: 99999999;" src="{{resultImage}}"></image>
+
 
 </view>
