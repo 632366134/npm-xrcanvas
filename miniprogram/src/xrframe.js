@@ -1,19 +1,19 @@
 import {
     //   homeRecognize,
     homeRecognizeYUV
-} from '/utils/utils';
+} from '../utils/utils';
 import * as YUVUtils from './yuv';
 // import '../xr-custom/effects/removeBlack';
 // import '../xr-custom/effects/transparentVideo'
-// import {
-//   generateTemplate1KeyFrame
-// } from '../xr-custom/keyframes/template1';
+import {
+  generateTemplate1KeyFrame
+} from './template1';
 // import {
 //   generateTemplate2KeyFrame
 // } from "../xr-custom/keyframes/template2";
-// import {
-//   generateTemplate3KeyFrame
-// } from '../xr-custom/keyframes/template3';
+import {
+  generateTemplate3KeyFrame
+} from './template3';
 // import {
 //   generateGrowKeyFrame
 // } from '../xr-custom/keyframes/grow';
@@ -152,14 +152,9 @@ export const recognizeCigarette = (scene) => {
     return new Promise(async (resolve) => {
         try {
             if (!scene._components) return resolve('break');
-            if (YUVUtils.incompatibleDevice()) {
                 let rgbData = YUVUtils.arRawDataToRGB(scene);
                 var recognizedResult = await homeRecognizeYUV(rgbData);
-            } else {
-                let imagePath = saveSceneAsImage(scene);
-                var recognizedResult = await homeRecognize(imagePath);
-                recognizedResult = JSON.parse(recognizedResult);
-            }
+         
             console.log('XR-FRAME 烟包识别接口', recognizedResult);
             if (recognizedResult.err_code !== 0) throw recognizedResult.err_desc || null;
             return resolve(recognizedResult.result);
@@ -220,6 +215,7 @@ export const concatArrayToObjects = (result, showModel) => {
             result.model.type = "model";
             objects.push(result.model);
         }
+        console.log(objects,result)
         return objects;
     } catch (err) {
         console.error('3D素材数据处理错误: ', err);
@@ -402,6 +398,7 @@ export const addTemplateTextAnimator = (template, scene, textList, animatorList)
 
 export const startAnimatorAndVideo = async (animatorList, videoList) => {
     try {
+        console.log(animatorList,videoList)
         for (let animator of animatorList) {
             animator.animator.play(animator.name);
         }
@@ -430,6 +427,7 @@ export const stopAnimatorAndVideo = async (animatorList, videoList, release) => 
 
 export const handleShadowRotate = (that) => {
     try {
+        console.log(that,'taht')
         that.handleTouchStart = (event) => {
             if (event.touches.length !== 1) return;
             that.setData({

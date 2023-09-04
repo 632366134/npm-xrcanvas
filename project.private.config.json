@@ -7,5 +7,6 @@
         "bigPackageSizeSupport": true,
         "preloadBackgroundData": false,
         "compileHotReLoad": true
-    }
+    },
+    "projectname": "npm-xrcanvas"
 }

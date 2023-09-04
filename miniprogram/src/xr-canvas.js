@@ -4,91 +4,61 @@ const STATE = {
     ZOOM_OR_PAN: 1
 }
 let prevValue;
-import {
-    arRawDataToRGB
-} from './yuv'
 import './remove-black';
-import {
-    homeRecognizeYUV
-} from '../utils/utils'
+import jsonData from './test'
+import * as xrframe from './xrframe'
 Component({
     properties: {
-        gltfListRaw: {
-            type: Array,
-            default: []
-        },
-        videoListRaw: {
-            type: Array,
-            default: []
-        },
+
         obsListRaw: {
-            type: Array,
-            default: []
-        },
-        keyframeListRaw: {
-            type: Array,
-            default: []
-        },
-        imageListRaw: {
             type: Array,
             default: []
         }
     },
     observers: {
-        gltfListRaw(newVal) {
-            this.setData({
-                gltfList: newVal,
-            })
-        },
-        videoListRaw(newVal) {
-            this.setData({
-                videoList: newVal,
-            })
-        },
+
         obsListRaw(newVal) {
             this.setData({
                 obsList: newVal,
             })
-        },
-        keyframeListRaw(newVal) {
-            this.setData({
-                keyframeList: newVal,
-            })
-        },
-        imageListRaw(newVal) {
-            this.setData({
-                imageList: newVal,
-            })
         }
+
     },
 
     data: {
         loaded: false,
         arReady: false,
-        gltfFlag: false
+        gltfFlag: false,
+        animatorList: [],
+        videoList: []
     },
     lifetimes: {
         attached() {
-            console.log(this.width)
+            console.log(jsonData, 'jsonData')
             console.log('data', this.data)
         },
-        detached() {
-            if (this.data.videoList && this.data.videoList.length > 0) {
-                const scene = this.scene
-                this.data.videoList.map((i) => {
-                    // 释放加载过的资源
-                    scene.assets.releaseAsset('video-texture', `${i.projectCode}`);
-                    scene.assets.releaseAsset('material', `${i.id}-video-mat`);
-                })
-            }
-            if (this.data.gltfList && this.data.gltfList.length > 0) {
-                const scene = this.scene
+        async detached() {
+            if (this.list.length !== 0) {
+                for (const obj of list) {
+                    if (obj.type === 'text') {
+
+                    } else if (obj.type === "model") {
+                        await this.scene.assets.releaseAsset('gltf', obj.uid);
+
+                    } else if (obj.type === 'video') {
+                        await this.scene.assets.releaseAsset('video-texture', obj.uid);
 
 
-                this.data.gltfList.map((v) => {
-                    // 释放加载过的资源
-                    scene.assets.releaseAsset('gltf', `gltf-${v.id}`);
-                })
+                    } else if (obj.type === 'screen') {
+
+                    } else if (obj.type === 'image') {
+                        await this.scene.assets.releaseAsset('texture', obj.uid);
+
+
+                    }
+
+                }
+                this.list = null
             }
             if (this.scene) {
                 this.scene = null
@@ -157,88 +127,49 @@ Component({
             //     data: currentTarget.dataset.item
             // })
         },
-        handleTrackerSwitch({
+        async handleTrackerSwitch({
             detail
         }) {
             console.log('tracked match', detail)
             const active = detail.value;
             const element = detail.el;
-            const obsList = this.data.obsList
-            const gltfList = this.data.gltfList
-            obsList.forEach(async i => {
-                const markerInfo = i;
-                const markerTracker = this.scene.getElementById(`marker-${markerInfo.projectCode}`)
+            const screenNode = this.screenNode = this.scene.getElementById('markerShadow')
+            if (active) {
+                let {
+                    result
+                } = await xrframe.recognizeCigarette(this.scene)
+                result = jsonData.result.p_ar
+                const list = this.list = await xrframe.concatArrayToObjects(result, true)
+                console.log(list, 'list')
+                if (list.length === 0) return
 
-                if (element === markerTracker) {
+                for (const obj of list) {
+                    if (obj.type === 'text') {
 
-                    if (active) {
-                        const {
-                            rgbArray,
-                            width,
-                            height
-                        } = await arRawDataToRGB(this.scene)
-                        console.log(rgbArray, 'rgbArray')
+                    } else if (obj.type === "model") {
+                        await xrframe.loadModelObject(this.scene, obj, this.data.animatorList, screenNode)
 
-                        const a = await homeRecognizeYUV({
-                            rgb_array: rgbArray,
-                            width,
-                            height
-                        })
-                        console.log(a)
-                        const gltfId = this.data.gltfList.filter(v => {
-                            return v.projectCode === markerInfo.projectCode
-                        })
-                        console.log(gltfId)
-                        this.createComparator(markerInfo.projectCode)
-                        const video = this.video = this.scene.assets.getAsset('video-texture', markerInfo.projectCode);
-                        this.videoTRS = this.scene.getElementById(`videoNode-${markerInfo.projectCode}`)?.getComponent(this.xrFrameSystem.Transform)
-                        console.log(markerInfo.projectCode, this.videoTRS, video, '123')
-                        if (this.videoTRS && video) {
-                            console.log('havevideo')
-                            const d = video.width / video.height
-                            this.videoTRS.scale.x = 1 * d
+                    } else if (obj.type === 'video') {
+                        await xrframe.loadVideoObject(this.scene, obj, this.data.videoList, screenNode)
 
-                            video && video.play()
-                        }
-                        this.gltfItemTRS = this.scene.getElementById(`gltfNode-${markerInfo.projectCode}`)?.getComponent(this.xrFrameSystem.Transform)
-                        this.gltfItemSubTRS = this.scene.getElementById(markerInfo.projectCode)?.getComponent(this.xrFrameSystem.Transform)
-                        this.gltfAnim = this.scene.getElementById(markerInfo.projectCode)?.getComponent(this.xrFrameSystem.Animator)
+                    } else if (obj.type === 'screen') {
 
-                        // 开启旋转缩放逻辑
-                        if (this.gltfItemTRS) {
-                            this.scene.event.addOnce('touchstart', this.handleTouchStart)
+                    } else if (obj.type === 'image') {
+                        await xrframe.loadImageObject(this.scene, obj, screenNode, this.data.textList, this)
 
-                        }
-                        if (this.data.keyframeList.length > 0) {
-                            this.data.keyframeList.forEach(async (obj, index) => {
-                                if (obj.parentId === gltfId[0].id) {
-                                    this.AnimatorKeyId = this.scene.getElementById(`keyframe-${gltfId[0].id}`)
-                                    this.AnimatorKey = this.AnimatorKeyId.getComponent(this.xrFrameSystem.Animator)
-                                    await this.AnimatorKey.play(obj.name)
-                                    await this.addGltfAnim()
-
-
-                                }
-                            });
-                        } else {
-                            await addGltfAnim()
-                        }
-
-                    } else {
-                        this.video && this.video.pause()
-                        this.setData({
-                            gltfFlag: false
-                        })
-                        if (this.gltfAnim?.stop !== undefined) {
-                            this.gltfAnim.stop()
-
-                        }
                     }
 
                 }
+                await xrframe.addTemplateTextAnimator(list.template_type, this.scene, this.data.textList, this.data.animatorList)
+                await xrframe.startAnimatorAndVideo(this.data.animatorList, this.data.videoList)
+                await xrframe.handleShadowRotate(this)
+            } else {
+                await this.stop()
+            }
 
-            })
-
+        },
+        async stop() {
+            await xrframe.stopAnimatorAndVideo(this.data.animatorList, this.data.videoList, true)
         },
         async addGltfAnim() {
             if (this.gltfAnim?._clips !== undefined) {

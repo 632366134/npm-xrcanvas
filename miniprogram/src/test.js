@@ -1,4 +1,4 @@
-{
+const jsonData={
     "err_code": 0,
     "process_cost": "437 ms",
     "request_id": "cjo0v949aqpgu1sgapeg",
@@ -258,3 +258,4 @@
         }
     }
 }
+export default jsonData
