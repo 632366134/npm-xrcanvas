@@ -14,57 +14,6 @@ Page({
             projectCode: 1,
             url: "/assets/xy5.png"
         }],
-        videoListRaw: [
-
-            // {
-            //     id: 2,
-            //     projectCode: 1,
-            //     url: "https://arp3.arsnowslide.com/undefined/319292761266671616/undefined/app~1.mp4",
-            //     scale: [1, 1, 1],
-            //     position: [0, -2, 0],
-            //     rotation: [0, 0, 0],
-            //     opacity: false
-            // },
-            // {
-            //     id: 5,
-            //     projectCode: 2,
-            //     url: "https://arp3.arsnowslide.com/undefined/319292761266671616/undefined/app~1.mp4",
-            //     scale: [1, 1, 1],
-            //     position: [0, 0, 0],
-            //     rotation: [0, 0, 0],
-            //     opacity: true
-            // }
-        ],
-        gltfListRaw: [
-        //     {
-        //     id: 6,
-        //     scale: [0.1, 0.1, 0.1],
-        //     position: [0, 0, 0.6],
-        //     rotation: [-90, 0, 0],
-        //     projectCode: 1,
-        //     // url: "https://arp3.arsnowslide.com/undefined/396100883129520128/undefined/huipaijianzhu.glb",
-        //     // url: "https://arp3.arsnowslide.com/zz/huipaijianzhu_v3.glb",
-
-        //     name: 'parent'
-        // }
-    ],
-        imageListRaw: [
-        //     {
-        //     id: 7,
-        //     scale: [1, 1, 1],
-        //     position: [0, 0, 0],
-        //     rotation: [0, 0, 0],
-        //     projectCode: 1,
-        //     // url: "https://arp3.arsnowslide.com/undefined/396100883129520128/undefined/huipaijianzhu.glb",
-        //     // url: "https://holodata.s3.cn-northwest-1.amazonaws.com.cn/nameCardData/mingpiantu.png",
-        // }
-    ],
-        keyframeListRaw: [{
-            parentId: 6,
-            id: 3,
-            keyframe: '/assets/animation/miku.json',
-            name: 'parent'
-        }]
     },
     onLoad() {
 

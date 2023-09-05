@@ -1,6 +1,6 @@
 {
   "name": "npm-xrcanvas",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "",
   "main": "index.js",
   "miniprogram": "/miniprogram/src",
@@ -13,6 +13,5 @@
   "author": "123",
   "license": "ISC",
   "dependencies": {
-    "jpeg-js": "^0.4.4"
   }
 }

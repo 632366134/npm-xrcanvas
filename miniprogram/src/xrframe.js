@@ -1,18 +1,18 @@
 import {
     //   homeRecognize,
     homeRecognizeYUV
-} from '../utils/utils';
+} from '/utils';
 import * as YUVUtils from './yuv';
 // import '../xr-custom/effects/removeBlack';
 // import '../xr-custom/effects/transparentVideo'
 import {
-  generateTemplate1KeyFrame
+    generateTemplate1KeyFrame
 } from './template1';
 // import {
 //   generateTemplate2KeyFrame
 // } from "../xr-custom/keyframes/template2";
 import {
-  generateTemplate3KeyFrame
+    generateTemplate3KeyFrame
 } from './template3';
 // import {
 //   generateGrowKeyFrame
@@ -152,9 +152,9 @@ export const recognizeCigarette = (scene) => {
     return new Promise(async (resolve) => {
         try {
             if (!scene._components) return resolve('break');
-                let rgbData = YUVUtils.arRawDataToRGB(scene);
-                var recognizedResult = await homeRecognizeYUV(rgbData);
-         
+            let rgbData = YUVUtils.arRawDataToRGB(scene);
+            var recognizedResult = await homeRecognizeYUV(rgbData);
+
             console.log('XR-FRAME 烟包识别接口', recognizedResult);
             if (recognizedResult.err_code !== 0) throw recognizedResult.err_desc || null;
             return resolve(recognizedResult.result);
@@ -215,7 +215,7 @@ export const concatArrayToObjects = (result, showModel) => {
             result.model.type = "model";
             objects.push(result.model);
         }
-        console.log(objects,result)
+        console.log(objects, result)
         return objects;
     } catch (err) {
         console.error('3D素材数据处理错误: ', err);
@@ -398,7 +398,7 @@ export const addTemplateTextAnimator = (template, scene, textList, animatorList)
 
 export const startAnimatorAndVideo = async (animatorList, videoList) => {
     try {
-        console.log(animatorList,videoList)
+        console.log(animatorList, videoList)
         for (let animator of animatorList) {
             animator.animator.play(animator.name);
         }
@@ -427,7 +427,7 @@ export const stopAnimatorAndVideo = async (animatorList, videoList, release) => 
 
 export const handleShadowRotate = (that) => {
     try {
-        console.log(that,'taht')
+        console.log(that, 'taht')
         that.handleTouchStart = (event) => {
             if (event.touches.length !== 1) return;
             that.setData({
@@ -497,6 +497,41 @@ export const uuid = () => {
 
 export const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+// fn 是需要节流处理的函数
+// wait 是时间间隔
+export function throttle(fn, wait, that) {
+
+    // previous 是上一次执行 fn 的时间
+    // timer 是定时器
+    let previous = 0,
+        timer = null
+
+    // 将 throttle 处理结果当作函数返回
+    return  async function (...args) {
+
+        // 获取当前时间，转换成时间戳，单位毫秒
+        let now = +new Date()
+
+        // ------ 新增部分 start ------ 
+        // 判断上次触发的时间和本次触发的时间差是否小于时间间隔
+        if (now - previous < wait) {
+            // 如果小于，则为本次触发操作设立一个新的定时器
+            // 定时器时间结束后执行函数 fn 
+            if (timer) clearTimeout(timer)
+            timer = setTimeout(async () => {
+                previous = now
+               return fn.apply(that, args)
+            }, wait)
+            // ------ 新增部分 end ------ 
+
+        } else {
+            // 第一次执行
+            // 或者时间间隔超出了设定的时间间隔，执行函数 fn
+            previous = now
+            return fn.apply(that, args)
+        }
+    }
 }
 
 export const backgroundAudioList = {

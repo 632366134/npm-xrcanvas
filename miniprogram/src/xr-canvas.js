@@ -135,9 +135,11 @@ Component({
             const element = detail.el;
             const screenNode = this.screenNode = this.scene.getElementById('markerShadow')
             if (active) {
-                let {
-                    result
-                } = await xrframe.recognizeCigarette(this.scene)
+                const debouncedFetchData =await xrframe.throttle(() => xrframe.recognizeCigarette(this.scene), 1000,this); // 300 毫秒的防抖延迟
+                console.log(debouncedFetchData, 'debouncedFetchData')
+                let result = await debouncedFetchData()
+                console.log(result, 'result')
+
                 result = jsonData.result.p_ar
                 const list = this.list = await xrframe.concatArrayToObjects(result, true)
                 console.log(list, 'list')
