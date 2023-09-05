@@ -1,5 +1,5 @@
 import {
-    //   homeRecognize,
+      homeRecognize,
     homeRecognizeYUV
 } from '/utils';
 import * as YUVUtils from './yuv';
@@ -152,9 +152,14 @@ export const recognizeCigarette = (scene) => {
     return new Promise(async (resolve) => {
         try {
             if (!scene._components) return resolve('break');
-            let rgbData = YUVUtils.arRawDataToRGB(scene);
-            var recognizedResult = await homeRecognizeYUV(rgbData);
-
+            if (YUVUtils.incompatibleDevice(scene)) {
+                let rgbData = YUVUtils.arRawDataToRGB(scene);
+                var recognizedResult = await homeRecognizeYUV(rgbData);
+            } else {
+                let imagePath = saveSceneAsImage(scene);
+                var recognizedResult = await homeRecognize(imagePath);
+                recognizedResult = JSON.parse(recognizedResult);
+            }
             console.log('XR-FRAME 烟包识别接口', recognizedResult);
             if (recognizedResult.err_code !== 0) throw recognizedResult.err_desc || null;
             return resolve(recognizedResult.result);
@@ -508,7 +513,7 @@ export function throttle(fn, wait, that) {
         timer = null
 
     // 将 throttle 处理结果当作函数返回
-    return  async function (...args) {
+    return async function (...args) {
 
         // 获取当前时间，转换成时间戳，单位毫秒
         let now = +new Date()
@@ -521,7 +526,7 @@ export function throttle(fn, wait, that) {
             if (timer) clearTimeout(timer)
             timer = setTimeout(async () => {
                 previous = now
-               return fn.apply(that, args)
+                return fn.apply(that, args)
             }, wait)
             // ------ 新增部分 end ------ 
 

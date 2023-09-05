@@ -34,7 +34,6 @@ Component({
     },
     lifetimes: {
         attached() {
-            console.log(jsonData, 'jsonData')
             console.log('data', this.data)
         },
         async detached() {
@@ -99,34 +98,34 @@ Component({
         },
     },
     methods: {
-        createComparator(value) {
-            const mesh = this.scene.getElementById(value)
+        // createComparator(value) {
+        //     const mesh = this.scene.getElementById(value)
 
-            if (prevValue === undefined) {
-                prevValue = value;
-                const shape = mesh.addComponent(this.xrFrameSystem.CubeShape, {
-                    autoFit: true
-                })
-            }
+        //     if (prevValue === undefined) {
+        //         prevValue = value;
+        //         const shape = mesh.addComponent(this.xrFrameSystem.CubeShape, {
+        //             autoFit: true
+        //         })
+        //     }
 
-            if (prevValue === value) {
-                return
-            } else {
-                const shape = mesh.addComponent(this.xrFrameSystem.CubeShape, {
-                    autoFit: true
-                })
-                const Oldmesh = this.scene.getElementById(prevValue)
-                Oldmesh.removeComponent(this.xrFrameSystem.CubeShape)
-                prevValue = value;
-            }
-        },
-        goPriview({
-            currentTarget
-        }) {
-            // this.triggerEvent("modalFlagTap", {
-            //     data: currentTarget.dataset.item
-            // })
-        },
+        //     if (prevValue === value) {
+        //         return
+        //     } else {
+        //         const shape = mesh.addComponent(this.xrFrameSystem.CubeShape, {
+        //             autoFit: true
+        //         })
+        //         const Oldmesh = this.scene.getElementById(prevValue)
+        //         Oldmesh.removeComponent(this.xrFrameSystem.CubeShape)
+        //         prevValue = value;
+        //     }
+        // },
+        // goPriview({
+        //     currentTarget
+        // }) {
+        //     // this.triggerEvent("modalFlagTap", {
+        //     //     data: currentTarget.dataset.item
+        //     // })
+        // },
         async handleTrackerSwitch({
             detail
         }) {
@@ -134,8 +133,9 @@ Component({
             const active = detail.value;
             const element = detail.el;
             const screenNode = this.screenNode = this.scene.getElementById('markerShadow')
+            this.triggerEvent('handleTrackerSwitch', active)
             if (active) {
-                const debouncedFetchData =await xrframe.throttle(() => xrframe.recognizeCigarette(this.scene), 1000,this); // 300 毫秒的防抖延迟
+                const debouncedFetchData = await xrframe.throttle(() => xrframe.recognizeCigarette(this.scene), 1000, this); // 300 毫秒的防抖延迟
                 console.log(debouncedFetchData, 'debouncedFetchData')
                 let result = await debouncedFetchData()
                 console.log(result, 'result')
@@ -162,15 +162,22 @@ Component({
                     }
 
                 }
+            this.triggerEvent('handleAssetsLoaded')
+
                 await xrframe.addTemplateTextAnimator(list.template_type, this.scene, this.data.textList, this.data.animatorList)
-                await xrframe.startAnimatorAndVideo(this.data.animatorList, this.data.videoList)
+                await this.startAnimatorAndVideo()
                 await xrframe.handleShadowRotate(this)
+
             } else {
-                await this.stop()
+                await this.stopAnimatorAndVideo()
             }
 
         },
-        async stop() {
+        async startAnimatorAndVideo() {
+            await xrframe.startAnimatorAndVideo(this.data.animatorList, this.data.videoList)
+
+        },
+        async stopAnimatorAndVideo() {
             await xrframe.stopAnimatorAndVideo(this.data.animatorList, this.data.videoList, true)
         },
         async addGltfAnim() {
@@ -198,6 +205,8 @@ Component({
         handleReady({
             detail
         }) {
+            this.triggerEvent('handleReady')
+
             const xrScene = this.scene = detail.value;
             this.xrFrameSystem = wx.getXrFrameSystem();
             console.log('xr-scene', xrScene);
@@ -339,6 +348,8 @@ Component({
         handleARReady: function ({
             detail
         }) {
+            this.triggerEvent('handleARReady')
+
             console.log('arReady', detail);
             // this.setData({
             //     arReady: true
