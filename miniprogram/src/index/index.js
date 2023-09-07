@@ -95,8 +95,23 @@ Component({
             console.log(detail, 'loadingchange')
             this.setData({
                 p_loadingFlag: !detail.handleAssetsLoaded,
-                p_scanFlag:false
+                p_scanFlag: false
             })
+        },
+        loadingProgress({
+            detail
+        }) {
+            console.log(detail, 'loadingProgress')
+
+        },
+        stayPage() {
+            console.log('stayPage')
+            if (this.data.workflowData.p_ending) {
+                this.setData({
+                    p_endingFlag: true,
+                    xrShow:false
+                })
+            }
         }
     }
 })

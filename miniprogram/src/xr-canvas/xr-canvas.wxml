@@ -4,10 +4,10 @@
     </xr-assets>
     <xr-node wx:if="{{trackerFlag}}">
         <xr-ar-tracker bind:ar-tracker-switch="handleTrackerSwitch" mode="Marker" src="{{obsItem.url}}" wx:key="{{obsItem.id}}" wx:for="{{obsList}}" wx:for-item="obsItem">
-            <xr-node id="markerShadow"></xr-node>
         </xr-ar-tracker>
 
     </xr-node>
+    <xr-node id="markerShadow"></xr-node>
     <xr-camera id="camera" node-id="camera" position="0 0 0" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera></xr-camera>
     <xr-node node-id="lights">
         <xr-light type="ambient" color="1 1 1" intensity="0.1" />

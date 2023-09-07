@@ -54,6 +54,10 @@ Component({
     },
     lifetimes: {
         async attached() {
+            this.textList = []
+            this.animatorList = []
+            this.videoList = []
+
             if (this.data.type === '2') {
 
             }
@@ -110,29 +114,12 @@ Component({
                 handleTrackerSwitch: active
             })
             if (active) {
-                console.log(element)
-                element.addChild(this.screenNode)
-                // const debouncedFetchData = await xrframe.throttle(() => xrframe.recognizeCigarette(this.scene), 1000, this); // 300 毫秒的防抖延迟
-                // console.log(debouncedFetchData, 'debouncedFetchData')
-                // let result = await debouncedFetchData()
-                // console.log(result, 'result')
-                // try {
-                //     await this.concatAndLoadAssets(result)
-                //     if (list.p_ending?.length === 0) return
-                //     timer = setTimeout(() => {
-                //         this.triggerEvent('lastShowChange', {
-                //             lastShow: true
-                //         })
-                //     }, 6000);
-                // } catch (error) {
-                //     this.triggerEvent('loadError', {
-                //         loadError: error
-                //     })
-
-                // }
-
-
+                await this.startAnimatorAndVideo()
+                timer = setTimeout(() => {
+                    this.triggerEvent('stayPage')
+                }, this.stay_duration);
             } else {
+                clearTimeout(timer)
                 await this.stopAnimatorAndVideo()
             }
 
@@ -141,33 +128,37 @@ Component({
             this.triggerEvent('handleAssetsLoaded', {
                 handleAssetsLoaded: false,
             })
-            // const screenNode = this.screenNode = this.scene.getElementById('markerShadow')
-            const screenNode=this.screenNode = this.scene.createElement(this.xrFrameSystem.XRNode);
+            this.setData({
+                trackerFlag: true,
+            })
+            const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
+            // const markerShadow=this.markerShadow = this.scene.createElement(this.xrFrameSystem.XRNode);
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
-            console.log(list, 'list', screenNode)
+            console.log(list, 'list', markerShadow)
             if (list.length === 0) return
             const promiseList = []
             for (const obj of list) {
                 if (obj.type === 'text') {
-                    const p = xrframe.loadImageObject(this.scene, obj, screenNode, this.data.textList, this)
+                    const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
                     promiseList.push(p)
 
                 } else if (obj.type === "model") {
-                    const p = xrframe.loadModelObject(this.scene, obj, this.data.animatorList, screenNode)
+                    const p = xrframe.loadModelObject(this.scene, obj, true, markerShadow, this)
                     promiseList.push(p)
 
                 } else if (obj.type === 'video') {
-                    const p = xrframe.loadVideoObject(this.scene, obj, this.data.videoList, screenNode)
+                    const p = xrframe.loadVideoObject(this.scene, obj, true, markerShadow, this)
 
                 } else if (obj.type === 'screen') {
-                    const p = xrframe.loadImageObject(this.scene, obj, screenNode, this.data.textList, this)
+                    const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
                     promiseList.push(p)
                 } else if (obj.type === 'image') {
-                    const p = xrframe.loadImageObject(this.scene, obj, screenNode, this.data.textList, this)
+                    const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
                     promiseList.push(p)
                 }
 
             }
+
             Promise.all(promiseList).then(async results => {
                 console.log(results, 'handleAssetsLoadedtrue')
                 this.triggerEvent('handleAssetsLoaded', {
@@ -175,24 +166,21 @@ Component({
 
                 })
 
-                await xrframe.addTemplateTextAnimator('模版一', this.scene, this.data.textList, this.data.animatorList)
-                await this.startAnimatorAndVideo()
+                await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
                 await xrframe.handleShadowRotate(this)
-                console.log(screenNode)
-                this.setData({
-                    trackerFlag: true,
-                })
+                console.log(markerShadow)
+
             }).catch(err => {
                 console.log(err)
             })
 
         },
         async startAnimatorAndVideo() {
-            await xrframe.startAnimatorAndVideo(this.data.animatorList, this.data.videoList)
+            await xrframe.startAnimatorAndVideo(this)
 
         },
         async stopAnimatorAndVideo() {
-            await xrframe.stopAnimatorAndVideo(this.data.animatorList, this.data.videoList, true)
+            await xrframe.stopAnimatorAndVideo(this, true)
         },
         async addGltfAnim() {
             if (this.gltfAnim?._clips !== undefined) {
@@ -250,6 +238,7 @@ Component({
                 back_image_url,
                 back_image_uid
             } = p_ar.cigarette
+            this.stay_duration = p_ar
             console.log(p_ar, 'result')
             this.setData({
                 obsList: [{

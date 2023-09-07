@@ -15,7 +15,7 @@
     transform: translateX(-50%);
 }
 
-.p_scan ,.p_loading{
+.p_scan ,.p_loading,.p_guide,.p_ending{
     position: fixed;
     top: 0;
     left: 0;
@@ -24,7 +24,7 @@
     height: 100vh;
 }
 
-.p_scan_image ,.p_loading_image{
+.p_scan_image ,.p_loading_image,.p_guideFlag_image,.p_ending_image{
     width: 100%;
     height: 100%;
 }

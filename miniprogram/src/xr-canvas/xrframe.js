@@ -21,7 +21,7 @@ import {
 const FSM = wx.getFileSystemManager();
 
 const XRFrameSystem = wx.getXrFrameSystem();
-
+let i = 1
 export const getCameraAuthorize = () => {
     return new Promise((resolve) => {
         wx.authorize({
@@ -173,7 +173,8 @@ export const recognizeCigarette = (scene) => {
             if (recognizedResult.result.p_ar === null) {
                 wx.showToast({
                     title: '暂无ar效果',
-                    duration: 1000
+                    duration: 1000,
+                    icon:'none'
                 })
                 return resolve(await recognizeCigarette(scene))
             } else {
@@ -244,11 +245,11 @@ export const concatArrayToObjects = (result, showModel) => {
     }
 }
 
-export const loadModelObject = async (scene, modelData, animatorList, markerShadow) => {
+export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
-        console.log(scene,'scene')
-        console.log(modelData,'modelData')
-        console.log(markerShadow,'markerShadow')
+        console.log(scene, 'scene')
+        console.log(modelData, 'modelData')
+        console.log(markerShadow, 'markerShadow')
 
         await scene.assets.releaseAsset('gltf', modelData.uid);
         if (!modelData.file_url) throw '无资源URL';
@@ -260,13 +261,13 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
         console.log(model)
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRGLTF);
-        console.log(node,'node')
+        console.log(node, 'node')
 
         if (!node) return;
         node.getComponent(XRFrameSystem.GLTF).setData({
             model: model.value,
         });
-        console.log(node,'node')
+        console.log(node, 'node')
 
         if (!node) return;
         node.event.addOnce('gltf-loaded', (detail) => {
@@ -274,20 +275,20 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
             if (gltf._animations.length === 0) return;
             let animator = detail.target.getComponent('animator');
             if (!animatorList) return;
-            animatorList.push({
+            that.animatorList.push({
                 animator: animator,
                 name: gltf._animations[0].clipNames[0],
             });
         });
         if (!markerShadow || !node) return;
-        await addObjectToShadow(markerShadow, node, modelData['3d_info'], false);
-        return ;
+        await addObjectToShadow(markerShadow, node, modelData['3d_info'], false, that);
+        return;
     } catch (err) {
         console.error('XR-FRAME GLTF模型加载错误: ', err);
     }
 }
 
-export const loadVideoObject = async (scene, videoData, videoList, markerShadow) => {
+export const loadVideoObject = async (scene, videoData, videoList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('video-texture', videoData.uid);
         if (!videoData.file_url) throw '无资源URL';
@@ -312,9 +313,9 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow)
             uid: videoData.uid,
         });
         if (!videoList) return;
-        videoList.push(video);
+        that.videoList.push(video);
         if (!markerShadow || !node) return;
-        await addObjectToShadow(markerShadow, node, videoData['3d_info'], true);
+        await addObjectToShadow(markerShadow, node, videoData['3d_info'], true, that);
         return;
     } catch (err) {
         console.error('XR-FRAME: 视频素材加载错误: ', err);
@@ -346,7 +347,8 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             geometry: scene.assets.getAsset('geometry', 'plane'),
             uid: imageData.uid,
         });
-        if (textList) textList.push({
+        if (!textList) return
+        that.textList.push({
             node: node,
             '3d_info': imageData['3d_info'],
         });
@@ -358,14 +360,14 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             });
         }
         if (!markerShadow || !node) return;
-        await addObjectToShadow(markerShadow, node, imageData['3d_info'], true);
+        await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
         return;
     } catch (err) {
         console.error('XR-FRAME: 图片素材加载错误: ', err);
     }
 }
 
-export const addObjectToShadow = (markerShadow, node, threeD, isPlane) => {
+export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => {
     return new Promise((resolve, reject) => {
         try {
             if (!markerShadow || !node) return;
@@ -389,6 +391,10 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane) => {
                 );
             }
             transform.position.setValue(threeD.position.x, threeD.position.y, threeD.position.z);
+            that.triggerEvent('handleAssetsProgress', {
+                index: i++,
+                length: that.list.length
+            })
             resolve();
         } catch (err) {
             console.error('XR-FRAME: 添加到Shadow节点错误: ', err);
@@ -397,26 +403,31 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane) => {
     });
 }
 
-export const addTemplateTextAnimator = (template, scene, textList, animatorList) => {
+export const addTemplateTextAnimator = async (template, scene,  that) => {
     try {
-        if (template === '模版四' || !scene._components) return;
-        for (let index in textList) {
-            let animator = textList[index].node.addComponent(XRFrameSystem.Animator);
+        if (!scene._components) return;
+        if (template === '模版四') {
+            await handleTemplate4KeyFrame(that)
+        }
+        console.log(that.textList,'textList')
+        for (let index in that.textList) {
+            let animator = that.textList[index].node.addComponent(XRFrameSystem.Animator);
+
             switch (template) {
                 case '模版一':
-                    var keyframe = generateTemplate1KeyFrame(Object.values(textList[index]['3d_info'].scale), index, 0, 2.5);
+                    var keyframe = generateTemplate1KeyFrame(Object.values(that.textList[index]['3d_info'].scale), index, 0, 2.5);
                     break;
                 case '模版二':
-                    var keyframe = generateTemplate2KeyFrame(Object.values(textList[index]['3d_info'].position), index);
+                    var keyframe = generateTemplate2KeyFrame(Object.values(that.textList[index]['3d_info'].position), index);
                     break;
                 case '模版三':
-                    var keyframe = generateTemplate3KeyFrame(Object.values(textList[index]['3d_info'].scale));
+                    var keyframe = generateTemplate3KeyFrame(Object.values(that.textList[index]['3d_info'].scale));
             }
             animator.addAnimation(new XRFrameSystem.KeyframeAnimation(
                 scene,
                 keyframe,
             ));
-            animatorList.push({
+            that.animatorList.push({
                 animator: animator,
                 name: 'animate'
             });
@@ -427,13 +438,12 @@ export const addTemplateTextAnimator = (template, scene, textList, animatorList)
     }
 }
 
-export const startAnimatorAndVideo = async (animatorList, videoList) => {
+export const startAnimatorAndVideo = async (that) => {
     try {
-        console.log(animatorList, videoList)
-        for (let animator of animatorList) {
+        for (let animator of that.animatorList) {
             animator.animator.play(animator.name);
         }
-        for (let video of videoList) {
+        for (let video of that.videoList) {
             video.stop();
             await video.play();
         }
@@ -442,12 +452,12 @@ export const startAnimatorAndVideo = async (animatorList, videoList) => {
     }
 }
 
-export const stopAnimatorAndVideo = async (animatorList, videoList, release) => {
+export const stopAnimatorAndVideo = async (that, release) => {
     try {
-        for (let animator of animatorList) {
+        for (let animator of that.animatorList) {
             animator.animator.stop();
         }
-        for (let video of videoList) {
+        for (let video of that.videoList) {
             video.stop();
             if (release) video.release();
         }
@@ -458,7 +468,6 @@ export const stopAnimatorAndVideo = async (animatorList, videoList, release) => 
 
 export const handleShadowRotate = (that) => {
     try {
-        console.log(that, 'taht')
         that.handleTouchStart = (event) => {
             if (event.touches.length !== 1) return;
             that.setData({
@@ -480,7 +489,7 @@ export const handleShadowRotate = (that) => {
                     clientY: event.touches[0].clientY,
                 }
             });
-            shadowRotateY(xMove, that.screenNode);
+            shadowRotateY(xMove, that.markerShadow);
         }
         that.handleTouchEnd = (event) => {
             that.scene.event.remove('touchmove', that.handleTouchMove)
@@ -492,8 +501,8 @@ export const handleShadowRotate = (that) => {
     }
 }
 
-export const shadowRotateY = (deltaX, screenNode) => {
-    const transform = screenNode.getComponent(XRFrameSystem.Transform);
+export const shadowRotateY = (deltaX, markerShadow) => {
+    const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     transform.rotation.y += deltaX / 200;
 }
 
