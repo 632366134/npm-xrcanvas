@@ -1,1 +1,5 @@
 /* pages/index.wxss */
+.npm-xrframe {
+    width: 100vw;
+    height: 100vh;
+}

@@ -1,3 +1,3 @@
-<view>
-    <npm-xrcanvas wx:if="{{xrFlag}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;"  obsListRaw="{{obsListRaw}}" Authorization="{{Authorization}}" requestUrl="{{requestUrl}}"  ></npm-xrcanvas>
+<view class="container">
+    <npm-xrframe class="npm-xrframe" id="npm-xrframe"></npm-xrframe>
 </view>

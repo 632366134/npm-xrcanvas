@@ -1,0 +1,14 @@
+<view class="container">
+    <xr-canvas id="xr-canvas" wx:if="{{xrShow}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;z-index: 99; " bind:handleAssetsLoaded="loadingChange"></xr-canvas>
+    <view class="error" wx:if="{{!xrShow}}">{{unSupport}}</view>
+    <view wx:if="{{p_guideFlag}}">
+        <image wx:if="{{workflowData.image_url}}" src="{{workflowData.p_guide.image_url}}" mode="" />
+        <video wx:if="{{workflowData.video_url}}" src="{{workflowData.p_guide.video_url}}" />
+    </view>
+    <view class="p_scan" wx:if="{{p_scanFlag}}">
+        <image class="p_scan_image" src="{{workflowData.p_scan.image_url}}" mode="" />
+    </view> 
+    <view class="p_loading" wx:if="{{p_loadingFlag}}">
+        <image class="p_loading_image" src="{{workflowData.p_loading.image_url}}" mode="" />
+    </view> 
+</view>

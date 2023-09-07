@@ -1,5 +1,5 @@
 import {
-      homeRecognize,
+    homeRecognize,
     homeRecognizeYUV
 } from '/utils';
 import * as YUVUtils from './yuv';
@@ -52,6 +52,8 @@ export const getCameraAuthorize = () => {
 
 export const handleXRSupport = (that) => {
     let xrSupport = handleXRCompatibility();
+    // console.log(xrSupport,'xrSupport')
+    xrSupport = true
     if (xrSupport !== true) {
         that.setData({
             unSupport: xrSupport,
@@ -69,11 +71,13 @@ export const initXRFrame = (that, width, height) => {
         windowHeight: windowHeight,
         pixelRatio: dpi,
     } = wx.getSystemInfoSync();
+    console.log(that.data)
+
     that.setData({
-        "xr.width": width || windowWidth,
-        "xr.height": height || windowHeight,
-        "xr.renderWidth": width ? width * dpi : windowWidth * dpi,
-        "xr.renderHeight": height ? height * dpi : windowHeight * dpi,
+        "width": width || windowWidth,
+        "height": height || windowHeight,
+        "renderWidth": width ? width * dpi : windowWidth * dpi,
+        "renderHeight": height ? height * dpi : windowHeight * dpi,
     });
 }
 
@@ -152,17 +156,30 @@ export const recognizeCigarette = (scene) => {
     return new Promise(async (resolve) => {
         try {
             if (!scene._components) return resolve('break');
-            if (YUVUtils.incompatibleDevice(scene)) {
+            console.log(YUVUtils.incompatibleDevice(scene), 'YUVUtils.incompatibleDevice(scene)')
+            if (!YUVUtils.incompatibleDevice(scene)) {
                 let rgbData = YUVUtils.arRawDataToRGB(scene);
                 var recognizedResult = await homeRecognizeYUV(rgbData);
+                console.log(recognizedResult.result)
+
             } else {
                 let imagePath = saveSceneAsImage(scene);
                 var recognizedResult = await homeRecognize(imagePath);
+
                 recognizedResult = JSON.parse(recognizedResult);
             }
             console.log('XR-FRAME 烟包识别接口', recognizedResult);
             if (recognizedResult.err_code !== 0) throw recognizedResult.err_desc || null;
-            return resolve(recognizedResult.result);
+            if (recognizedResult.result.p_ar === null) {
+                wx.showToast({
+                    title: '暂无ar效果',
+                    duration: 1000
+                })
+                return resolve(await recognizeCigarette(scene))
+            } else {
+                return resolve(recognizedResult.result);
+            }
+
         } catch (err) {
             console.error('XR-FRAME识别错误', err);
             wx.showToast({
@@ -229,6 +246,10 @@ export const concatArrayToObjects = (result, showModel) => {
 
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow) => {
     try {
+        console.log(scene,'scene')
+        console.log(modelData,'modelData')
+        console.log(markerShadow,'markerShadow')
+
         await scene.assets.releaseAsset('gltf', modelData.uid);
         if (!modelData.file_url) throw '无资源URL';
         let model = await scene.assets.loadAsset({
@@ -236,12 +257,17 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
             assetId: modelData.uid,
             src: modelData.file_url
         });
+        console.log(model)
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRGLTF);
+        console.log(node,'node')
+
         if (!node) return;
         node.getComponent(XRFrameSystem.GLTF).setData({
             model: model.value,
         });
+        console.log(node,'node')
+
         if (!node) return;
         node.event.addOnce('gltf-loaded', (detail) => {
             let gltf = detail.target.getComponent('gltf');
@@ -255,7 +281,7 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
         });
         if (!markerShadow || !node) return;
         await addObjectToShadow(markerShadow, node, modelData['3d_info'], false);
-        return;
+        return ;
     } catch (err) {
         console.error('XR-FRAME GLTF模型加载错误: ', err);
     }
@@ -538,7 +564,36 @@ export function throttle(fn, wait, that) {
         }
     }
 }
+export const releaseAssetList = (that, list) => {
+    if (list.length !== 0) {
+        try {
 
+
+            for (const obj of list) {
+                if (obj.type === 'text') {
+                    that.scene.assets.releaseAsset('texture', obj.uid);
+
+                } else if (obj.type === "model") {
+                    that.scene.assets.releaseAsset('gltf', obj.uid);
+
+                } else if (obj.type === 'video') {
+                    that.scene.assets.releaseAsset('video-texture', obj.uid);
+
+
+                } else if (obj.type === 'screen') {
+                    that.scene.assets.releaseAsset('texture', obj.uid);
+
+                } else if (obj.type === 'image') {
+                    that.scene.assets.releaseAsset('texture', obj.uid);
+                }
+
+            }
+            list = null
+        } catch (error) {
+            console.log('releaseAsset失败', error)
+        }
+    }
+}
 export const backgroundAudioList = {
     '模版三': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/2.mp3',
     '模版四': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/1.mp3',
