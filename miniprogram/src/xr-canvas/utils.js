@@ -56,3 +56,21 @@ export const workflow = (data) => {
         });
     });
 }
+export const getArList  = (data) => {
+    return new Promise((resolve, reject) => {
+        wx.request({
+            url: url + '/api/m/ar/home/sku_ar/items?pl='+data,
+            method: 'GET',
+            header: {
+                'content-type': 'application/json',
+                'Authorization': Authorization
+            },
+            success(res) {
+                resolve(res.data);
+            },
+            fail(err) {
+                reject(err);
+            }
+        });
+    });
+}

@@ -14,9 +14,9 @@ import {
 import {
     generateTemplate3KeyFrame
 } from './template3';
-// import {
-//   generateGrowKeyFrame
-// } from '../xr-custom/keyframes/grow';
+import {
+    generateGrowKeyFrame
+} from './grow';
 
 const FSM = wx.getFileSystemManager();
 
@@ -52,16 +52,15 @@ export const getCameraAuthorize = () => {
 
 export const handleXRSupport = (that) => {
     let xrSupport = handleXRCompatibility();
-    // console.log(xrSupport,'xrSupport')
     xrSupport = true
     if (xrSupport !== true) {
         that.setData({
             unSupport: xrSupport,
         });
     } else {
-        that.setData({
-            xrShow: true,
-        });
+        // that.setData({
+        //     xrShow: true,
+        // });
     }
 }
 
@@ -156,12 +155,9 @@ export const recognizeCigarette = (scene) => {
     return new Promise(async (resolve) => {
         try {
             if (!scene._components) return resolve('break');
-            console.log(YUVUtils.incompatibleDevice(scene), 'YUVUtils.incompatibleDevice(scene)')
             if (!YUVUtils.incompatibleDevice(scene)) {
                 let rgbData = YUVUtils.arRawDataToRGB(scene);
                 var recognizedResult = await homeRecognizeYUV(rgbData);
-                console.log(recognizedResult.result)
-
             } else {
                 let imagePath = saveSceneAsImage(scene);
                 var recognizedResult = await homeRecognize(imagePath);
@@ -174,7 +170,7 @@ export const recognizeCigarette = (scene) => {
                 wx.showToast({
                     title: '暂无ar效果',
                     duration: 1000,
-                    icon:'none'
+                    icon: 'none'
                 })
                 return resolve(await recognizeCigarette(scene))
             } else {
@@ -355,8 +351,10 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         node.setAttribute('states', 'cullOn: false');
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
-            node.event.add('touch-shape', () => {
+            node.event.add('touch-shape', async() => {
                 that.triggerEvent('showInteractMedia', imageData.event);
+                clearTimeout(that.timer)
+                await that.StayPageShow()
             });
         }
         if (!markerShadow || !node) return;
@@ -403,13 +401,14 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => 
     });
 }
 
-export const addTemplateTextAnimator = async (template, scene,  that) => {
+export const addTemplateTextAnimator = async (template, scene, that) => {
     try {
         if (!scene._components) return;
         if (template === '模版四') {
             await handleTemplate4KeyFrame(that)
+            return
         }
-        console.log(that.textList,'textList')
+        console.log(that.textList, 'textList')
         for (let index in that.textList) {
             let animator = that.textList[index].node.addComponent(XRFrameSystem.Animator);
 
@@ -574,7 +573,7 @@ export function throttle(fn, wait, that) {
     }
 }
 export const releaseAssetList = (that, list) => {
-    if (list.length !== 0) {
+    if (list?.length !== 0) {
         try {
 
 

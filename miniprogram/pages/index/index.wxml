@@ -1,3 +1,3 @@
 <view class="container">
-    <npm-xrframe class="npm-xrframe" id="npm-xrframe"></npm-xrframe>
+    <npm-xrframe class="npm-xrframe" id="npm-xrframe" workflowObject="{{workflowObject}}" workflowType="{{workflowType}}" p_arRawData="{{p_arRawData}}"></npm-xrframe>
 </view>

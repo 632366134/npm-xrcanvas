@@ -7,37 +7,49 @@ let prevValue;
 import './remove-black';
 import jsonData from './test'
 import * as xrframe from './xrframe'
+import {
+    getArList
+} from './utils'
+let flag
+
 Component({
     properties: {
-
-        obsListRaw: {
-            type: Array,
-            default: []
+        arType: {
+            type: Number,
+            default: null
         },
-        type1: {
-            type: String,
-            default: ''
-        }
+        p_arObject: {
+            type: Object,
+            default: {}
+        },
     },
     observers: {
-
-        obsListRaw(newVal) {
-            this.setData({
-                obsList: newVal,
-            })
-        },
-        type1(newVal) {
-            if (newVal === '2') {
+        arType(newVal) {
+            if (newVal === 2) {
                 this.setData({
-                    type2: newVal,
+                    type: newVal,
+                    modes: 'threeDof',
+                    arReadyFlag: true,
+                    trackerFlag2: false,
                     trackerFlag: false
                 })
             } else {
                 this.setData({
-                    type2: newVal,
-                    trackerFlag: true
+                    type: newVal,
+                    modes: 'Marker',
+                    arReadyFlag: true,
+                    trackerFlag2: true
+
                 })
+                this.data.trackerFlag = true
+
             }
+
+        },
+        p_arObject(newVal) {
+            this.setData({
+                p_ar: newVal,
+            })
 
         }
 
@@ -49,8 +61,8 @@ Component({
         gltfFlag: false,
         animatorList: [],
         videoList: [],
-        trackerFlag: false,
-        type2: ''
+        type2: '',
+        p_ar: {},
     },
     lifetimes: {
         async attached() {
@@ -64,6 +76,11 @@ Component({
         },
         detached() {
             xrframe.releaseAssetList(this, this.list)
+            wx.offGyroscopeChange(this.x)
+            wx.stopGyroscope()
+            if (this.x) {
+                this.x = null
+            }
             if (this.scene) {
                 this.scene = null
             }
@@ -114,13 +131,14 @@ Component({
                 handleTrackerSwitch: active
             })
             if (active) {
+                await this.StayPageShow(timer)
+                if (flag) return
                 await this.startAnimatorAndVideo()
-                timer = setTimeout(() => {
-                    this.triggerEvent('stayPage')
-                }, this.stay_duration);
+                flag = true
+
             } else {
                 clearTimeout(timer)
-                await this.stopAnimatorAndVideo()
+                // await this.stopAnimatorAndVideo()
             }
 
         },
@@ -128,9 +146,9 @@ Component({
             this.triggerEvent('handleAssetsLoaded', {
                 handleAssetsLoaded: false,
             })
-            this.setData({
-                trackerFlag: true,
-            })
+            // this.setData({
+            //     trackerFlag: true,
+            // })
             const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
             // const markerShadow=this.markerShadow = this.scene.createElement(this.xrFrameSystem.XRNode);
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
@@ -159,16 +177,23 @@ Component({
 
             }
 
-            Promise.all(promiseList).then(async results => {
+            await Promise.all(promiseList).then(async results => {
                 console.log(results, 'handleAssetsLoadedtrue')
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
 
                 })
-
+                console.log(this.data.trackerFlag, 'this.data.trackerFlag')
                 await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
+                this.Transform = this.markerShadow.getComponent(this.xrFrameSystem.Transform)
+                this.Transform.setData({
+                    visible: true
+                })
+                this.setData({
+                    trackerFlag: this.data.trackerFlag
+                })
+                if (!this.data.trackerFlag) return
                 await xrframe.handleShadowRotate(this)
-                console.log(markerShadow)
 
             }).catch(err => {
                 console.log(err)
@@ -182,33 +207,17 @@ Component({
         async stopAnimatorAndVideo() {
             await xrframe.stopAnimatorAndVideo(this, true)
         },
-        async addGltfAnim() {
-            if (this.gltfAnim?._clips !== undefined) {
-                const clips = this.gltfAnim._clips;
-                this.clipName = []
-
-                clips.forEach((v, key) => {
-                    this.clipName.push(key)
-                })
-                if (this.clipName.length != 0) {
-                    this.clipName.forEach(i => {
-                        this.gltfAnim.play(i, {
-                            loop: -1,
-                        });
-                    })
-                }
-
-            }
-
-            await this.setData({
-                gltfFlag: true
-            })
+        async StayPageShow(timer) {
+            timer = this.timer = setTimeout(() => {
+                this.triggerEvent('stayPage')
+                clearTimeout(timer)
+            }, this.stay_duration);
         },
         handleReady({
             detail
         }) {
             this.triggerEvent('handleReady')
-
+            console.log(detail.value, this.data.arReadyFlag, this.data.modes, 'modemode')
             const xrScene = this.scene = detail.value;
             this.xrFrameSystem = wx.getXrFrameSystem();
             console.log('xr-scene', xrScene);
@@ -229,27 +238,55 @@ Component({
             detail
         }) {
             this.triggerEvent('handleARReady')
-            const {
-                p_ar
-            } = await xrframe.recognizeCigarette(this.scene)
-            const {
-                front_image_url,
-                front_image_uid,
-                back_image_url,
-                back_image_uid
-            } = p_ar.cigarette
-            this.stay_duration = p_ar
-            console.log(p_ar, 'result')
-            this.setData({
-                obsList: [{
-                    url: front_image_url,
-                    id: front_image_uid
-                }, {
-                    url: back_image_url,
-                    id: back_image_uid
-                }]
-            })
-            await this.concatAndLoadAssets(p_ar)
+            if (this.data.type === 1) {
+                const {
+                    p_ar
+                } = await xrframe.recognizeCigarette(this.scene)
+                const {
+                    front_image_url,
+                    front_image_uid,
+                    back_image_url,
+                    back_image_uid
+                } = p_ar.cigarette
+                this.stay_duration = p_ar.stay_duration * 1000
+                console.log(p_ar, 'result')
+                this.setData({
+                    obsList: [{
+                        url: front_image_url,
+                        id: front_image_uid
+                    }, {
+                        url: back_image_url,
+                        id: back_image_uid
+                    }]
+                })
+                await this.concatAndLoadAssets(p_ar)
+            } else if (this.data.type === 2) {
+                console.log(this.data.p_ar)
+                await this.concatAndLoadAssets(this.data.p_ar)
+                this.stay_duration = this.data.p_ar.stay_duration * 1000
+                console.log(this.stay_duration)
+                await this.startAnimatorAndVideo()
+                await this.StayPageShow()
+                // const camera = this.camera = this.scene.getElementById('camera')
+                // this.scene.removeChild(this.markerShadow)
+                // camera.addChild(this.markerShadow)
+                let s = this.s = ({
+                    y
+                }) => {
+                    this.Transform.position.x -= y * 0.1
+                }
+                wx.startGyroscope({
+                    interval: 'ui',
+                    success() {
+
+                        wx.onGyroscopeChange(s)
+                    }
+                })
+
+                console.log(this.scene)
+
+            }
+
 
         },
 
