@@ -1,6 +1,6 @@
 Page({
     data: {
-        workflowType: 1,
+        workflowType:1,
         p_arData: {
             "p_ar": {
                 "cigarette": {
@@ -238,7 +238,12 @@ Page({
                     "uid": ""
                 }
             ],
-            "p_ending": null,
+            "p_ending": {
+                "image_uid": "f-cj0sjr49aqpn3j2l3vr0",
+                "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/14f9785996fbaf38de6242a06b586232.jpeg",
+                "name": "徽商加载2",
+                "uid": "ml-cj0sjss9aqpn3j2l3vsg"
+              },
             "p_ending_uid": "",
             "p_guide": {
                 "audio_uid": "f-ci1ct349aqphkm72787g",

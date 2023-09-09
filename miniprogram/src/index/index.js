@@ -56,8 +56,8 @@ Component({
      */
     lifetimes: {
         async attached() {
-            const d =await getArList("10,1")
-            console.log(d,'ddddddd')
+            const d = await getArList("10,1")
+            console.log(d, 'ddddddd')
             if (this.data.workflowType === 2) {
                 const {
                     p_guide,
@@ -65,7 +65,7 @@ Component({
                     p_loading,
                     p_ending,
                 } = this.data.workflowData
-                if (p_guide !== null && p_scan !== null && p_loading !== null && p_ending !== null) {
+                if (p_guide && p_scan && p_loading && p_ending) {
                     await this.arCameraShow()
                     this.guideShow(p_guide)
                 } else if (p_guide !== null) {
@@ -142,7 +142,7 @@ Component({
                 this.innerAudioContext.onEnded(list)
                 // this.innerAudioContext.loop = true
             }
-            let timer = setTimeout(async() => {
+            let timer = setTimeout(async () => {
                 await xrframe.getCameraAuthorize()
                 this.setData({
                     p_guideFlag: false,
@@ -156,7 +156,7 @@ Component({
             detail
         }) {
             console.log(detail, 'loadingchange')
-            if (this.data.workflowData.p_loading.image_url !== null) {
+            if (this.data.workflowData.p_loading) {
                 this.setData({
                     p_loadingFlag: !detail.handleAssetsLoaded,
                     p_scanFlag: false
@@ -191,7 +191,7 @@ Component({
                 image_url,
                 video_url
             } = detail
-            if (image_url === null && video_url === null) return
+            if (!image_url && !video_url) return
             this.setData({
                 eventFlag: true,
                 event_image: image_url,

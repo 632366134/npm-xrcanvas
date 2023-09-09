@@ -38,7 +38,7 @@ Component({
         videoList: [],
         type2: '',
         p_ar: {},
-        obsList:[]
+        obsList: []
     },
     lifetimes: {
         async attached() {
@@ -50,6 +50,12 @@ Component({
                     arReadyFlag: true,
                     modes: "Marker",
                     trackerFlag2: true,
+                })
+            } else {
+                this.setData({
+                    arReadyFlag: true,
+                    modes: "threeDof",
+                    trackerFlag2: false,
                 })
             }
         },
@@ -157,7 +163,7 @@ Component({
                 }
             }
             await Promise.all(promiseList).then(async results => {
-               
+
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
                 })
@@ -167,6 +173,7 @@ Component({
 
 
                 await xrframe.handleShadowRotate(this)
+                if (this.data.workflowType === 2) return
                 this.setData({
                     trackerFlag: true
                 })
@@ -233,16 +240,22 @@ Component({
                     }]
                 })
                 await this.concatAndLoadAssets(p_ar)
-            } else if (this.data.type === 2) {
-                console.log(this.data.p_ar)
-                await this.concatAndLoadAssets(this.data.p_ar)
-                this.stay_duration = this.data.p_ar.stay_duration * 1000
-                console.log(this.stay_duration)
+            } else if (this.data.workflowType === 2) {
+                let {
+                    p_ar
+                } = this.data.p_arData
+                await this.concatAndLoadAssets(p_ar)
+                this.stay_duration = p_ar.stay_duration * 1000
+                this.Transform.setData({
+                    visible: true
+                })
                 await this.startAnimatorAndVideo()
                 await this.StayPageShow()
+
                 // const camera = this.camera = this.scene.getElementById('camera')
                 // this.scene.removeChild(this.markerShadow)
                 // camera.addChild(this.markerShadow)
+                if (p_ar.template_type === "模版四") return
                 let s = this.s = ({
                     y
                 }) => {
@@ -251,7 +264,6 @@ Component({
                 wx.startGyroscope({
                     interval: 'ui',
                     success() {
-
                         wx.onGyroscopeChange(s)
                     }
                 })

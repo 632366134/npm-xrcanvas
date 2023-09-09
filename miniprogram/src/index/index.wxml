@@ -3,7 +3,7 @@
     <view class="error" wx:if="{{unSupport}}">{{unSupport}}</view>
     <view class="p_guide" wx:if="{{p_guideFlag}}">
         <image class="p_guideFlag_image" wx:if="{{workflowData.p_guide.image_url}}" src="{{workflowData.p_guide.image_url}}" mode="" />
-        <video autoplay class="p_guideFlag_video" wx:if="{{workflowData.p_guide.video_url}}" src="{{workflowData.p_guide.video_url}}" />
+        <video controls="{{false}}" autoplay class="p_guideFlag_video" wx:if="{{workflowData.p_guide.video_url}}" src="{{workflowData.p_guide.video_url}}" />
     </view>
     <view class="p_scan" wx:if="{{p_scanFlag}}">
         <image class="p_scan_image" src="{{workflowData.p_scan.image_url}}" mode="aspectFill" />
@@ -16,6 +16,6 @@
     </view>
     <view class="p_ending" wx:if="{{eventFlag}}" bind:tap="eventFlagChange">
         <image class="p_guideFlag_image" wx:if="{{event_image}}" src="{{event_image}}" mode="aspectFit" />
-        <video class="p_guideFlag_video" wx:if="{{event_url}}" src="{{event_url}}" />
+        <video controls="{{false}}" autoplay class="p_guideFlag_video" wx:if="{{event_url}}" src="{{event_url}}" />
     </view>
 </view>
