@@ -14,46 +14,21 @@ let flag
 
 Component({
     properties: {
-        arType: {
+        workflowType: {
             type: Number,
             default: null
         },
-        p_arObject: {
+        p_arData: {
             type: Object,
             default: {}
         },
-    },
-    observers: {
-        arType(newVal) {
-            if (newVal === 2) {
-                this.setData({
-                    type: newVal,
-                    modes: 'threeDof',
-                    arReadyFlag: true,
-                    trackerFlag2: false,
-                    trackerFlag: false
-                })
-            } else {
-                this.setData({
-                    type: newVal,
-                    modes: 'Marker',
-                    arReadyFlag: true,
-                    trackerFlag2: true
-
-                })
-                this.data.trackerFlag = true
-
-            }
-
-        },
-        p_arObject(newVal) {
-            this.setData({
-                p_ar: newVal,
-            })
+        workflowData: {
+            type: Object,
+            default: {}
 
         }
-
     },
+    observers: {},
 
     data: {
         loaded: false,
@@ -63,15 +38,19 @@ Component({
         videoList: [],
         type2: '',
         p_ar: {},
+        obsList:[]
     },
     lifetimes: {
         async attached() {
             this.textList = []
             this.animatorList = []
             this.videoList = []
-
-            if (this.data.type === '2') {
-
+            if (this.data.workflowType === 1) {
+                this.setData({
+                    arReadyFlag: true,
+                    modes: "Marker",
+                    trackerFlag2: true,
+                })
             }
         },
         detached() {
@@ -131,6 +110,9 @@ Component({
                 handleTrackerSwitch: active
             })
             if (active) {
+                this.Transform.setData({
+                    visible: true
+                })
                 await this.StayPageShow(timer)
                 if (flag) return
                 await this.startAnimatorAndVideo()
@@ -138,6 +120,9 @@ Component({
 
             } else {
                 clearTimeout(timer)
+                this.Transform.setData({
+                    visible: false
+                })
                 // await this.stopAnimatorAndVideo()
             }
 
@@ -146,11 +131,7 @@ Component({
             this.triggerEvent('handleAssetsLoaded', {
                 handleAssetsLoaded: false,
             })
-            // this.setData({
-            //     trackerFlag: true,
-            // })
             const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
-            // const markerShadow=this.markerShadow = this.scene.createElement(this.xrFrameSystem.XRNode);
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
             console.log(list, 'list', markerShadow)
             if (list.length === 0) return
@@ -174,27 +155,21 @@ Component({
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
                     promiseList.push(p)
                 }
-
             }
-
             await Promise.all(promiseList).then(async results => {
-                console.log(results, 'handleAssetsLoadedtrue')
+               
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
-
                 })
-                console.log(this.data.trackerFlag, 'this.data.trackerFlag')
                 await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
+                // await xrframe.addTemplateTextAnimator('模版四', this.scene, this)
                 this.Transform = this.markerShadow.getComponent(this.xrFrameSystem.Transform)
-                this.Transform.setData({
-                    visible: true
-                })
-                this.setData({
-                    trackerFlag: this.data.trackerFlag
-                })
-                if (!this.data.trackerFlag) return
-                await xrframe.handleShadowRotate(this)
 
+
+                await xrframe.handleShadowRotate(this)
+                this.setData({
+                    trackerFlag: true
+                })
             }).catch(err => {
                 console.log(err)
             })
@@ -202,7 +177,6 @@ Component({
         },
         async startAnimatorAndVideo() {
             await xrframe.startAnimatorAndVideo(this)
-
         },
         async stopAnimatorAndVideo() {
             await xrframe.stopAnimatorAndVideo(this, true)
@@ -217,7 +191,6 @@ Component({
             detail
         }) {
             this.triggerEvent('handleReady')
-            console.log(detail.value, this.data.arReadyFlag, this.data.modes, 'modemode')
             const xrScene = this.scene = detail.value;
             this.xrFrameSystem = wx.getXrFrameSystem();
             console.log('xr-scene', xrScene);
@@ -238,7 +211,7 @@ Component({
             detail
         }) {
             this.triggerEvent('handleARReady')
-            if (this.data.type === 1) {
+            if (this.data.workflowType === 1) {
                 const {
                     p_ar
                 } = await xrframe.recognizeCigarette(this.scene)

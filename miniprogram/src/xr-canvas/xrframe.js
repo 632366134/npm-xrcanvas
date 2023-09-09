@@ -58,6 +58,7 @@ export const handleXRSupport = (that) => {
             unSupport: xrSupport,
         });
     } else {
+        // if (that.data.workflowType === 2) return
         // that.setData({
         //     xrShow: true,
         // });
@@ -351,7 +352,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         node.setAttribute('states', 'cullOn: false');
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
-            node.event.add('touch-shape', async() => {
+            node.event.add('touch-shape', async () => {
                 that.triggerEvent('showInteractMedia', imageData.event);
                 clearTimeout(that.timer)
                 await that.StayPageShow()

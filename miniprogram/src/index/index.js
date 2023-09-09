@@ -9,7 +9,7 @@ Component({
      * 组件的属性列表
      */
     properties: {
-        workflowObject: {
+        workflowData: {
             type: Object,
             default: {}
         },
@@ -17,29 +17,13 @@ Component({
             type: Number,
             default: null
         },
-        p_arRawData: {
+        p_arData: {
             type: Object,
             default: {}
         }
 
     },
-    observers: {
-        workflowObject(newVal) {
-            this.setData({
-                workflowData: newVal,
-            })
-        },
-        workflowType(newVal) {
-            this.setData({
-                type: newVal,
-            })
-        },
-        p_arRawData(newVal) {
-            this.setData({
-                p_arObject: newVal,
-            })
-        },
-    },
+
 
     /**
      * 组件的初始数据
@@ -72,8 +56,9 @@ Component({
      */
     lifetimes: {
         async attached() {
-
-            if (this.data.type === 2) {
+            const d =await getArList("10,1")
+            console.log(d,'ddddddd')
+            if (this.data.workflowType === 2) {
                 const {
                     p_guide,
                     p_scan,
@@ -89,7 +74,7 @@ Component({
                     await this.arCameraShow()
 
                     this.setData({
-                        p_guideFlag: false,
+                        // p_guideFlag: false,
                         p_scanFlag: true,
                         xrShow: true
                     })
@@ -103,7 +88,7 @@ Component({
                         p_endingFlag: true
                     })
                 }
-            } else if (this.data.type === 1) {
+            } else if (this.data.workflowType === 1) {
                 await this.arCameraShow()
                 await this.workflow1Fun()
             } else {
@@ -122,57 +107,50 @@ Component({
         async arCameraShow() {
             await xrframe.initXRFrame(this)
             await xrframe.handleXRSupport(this)
-            if (this.data.xrShow !== true) return
-            await xrframe.getCameraAuthorize()
         },
         async workflow1Fun() {
+            let result = this.data.workflowData
+            console.log(result, 'result')
             const {
-                err_code,
-                result
-            } = await workflow()
-            if (err_code !== 0) return
-            this.setData({
-                workflowData: result,
-            })
-            console.log(result)
-            if (result.p_guide !== null) {
-                this.guideShow(result.p_guide)
+                p_guide
+            } = result
+            if (p_guide) {
+                this.guideShow(p_guide)
             } else {
+                await xrframe.getCameraAuthorize()
+
                 this.setData({
                     p_scanFlag: true,
                     xrShow: true
-
                 })
             }
         },
-        guideShow(p_guide, next = true) {
-            console.log(p_guide, 'p_guide')
+        guideShow(p_guide) {
             this.setData({
                 p_guideFlag: true
             })
-            if (p_guide.audio_url !== null) {
+            if (p_guide.audio_url) {
                 this.innerAudioContext = wx.createInnerAudioContext({
                     useWebAudioImplement: true // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
                 })
                 this.innerAudioContext.src = p_guide.audio_url
-                this.innerAudioContext.play() // 播放
+                // this.innerAudioContext.play() // 播放
                 const list = () => {
-
                     this.innerAudioContext.offEnded(list)
                     this.innerAudioContext.destroy()
                 }
                 this.innerAudioContext.onEnded(list)
                 // this.innerAudioContext.loop = true
             }
-            if (!next) return
-            let timer = setTimeout(() => {
+            let timer = setTimeout(async() => {
+                await xrframe.getCameraAuthorize()
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
                     xrShow: true
                 })
                 clearTimeout(timer)
-            }, p_guide.duration);
+            }, p_guide.duration * 1000);
         },
         loadingChange({
             detail
