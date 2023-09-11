@@ -8,3 +8,4 @@
   justify-content: space-between;
   box-sizing: border-box;
 } 
+@import "/src/wxParse/wxParse.wxss";

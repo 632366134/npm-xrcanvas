@@ -129,7 +129,9 @@ Component({
                 if (flag) return
                 await this.startAnimatorAndVideo()
                 this.innerAudioContext2?.play() // 播放
-
+                this.triggerEvent('bgcAudioFlagChange', {
+                    bgc_AudioFlag: true
+                })
                 flag = true
 
             } else {
@@ -141,9 +143,9 @@ Component({
             }
 
         },
-        async concatAndLoadAssets(result) {
+        async concatAndLoadAssets(result, flag = false) {
             this.triggerEvent('handleAssetsLoaded', {
-                handleAssetsLoaded: false,
+                handleAssetsLoaded: true,type:result.template_type
             })
             const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
@@ -171,23 +173,26 @@ Component({
                 }
             }
             await Promise.all(promiseList).then(async results => {
-
+                console.log(results, 'resultsresultsresultsresults')
                 this.triggerEvent('handleAssetsLoaded', {
-                    handleAssetsLoaded: true,
+                    handleAssetsLoaded: false,
                 }, {
                     composed: true,
                     capturePhase: true,
                     bubbles: true
                 })
+                if (flag) return
                 await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
-                // await xrframe.addTemplateTextAnimator('模版四', this.scene, this)
                 this.Transform = this.markerShadow.getComponent(this.xrFrameSystem.Transform)
-
-
-                await xrframe.handleShadowRotate(this)
                 if (this.data.workflowType === 2) {
                     this.innerAudioContext2?.play() // 播放
+                    this.triggerEvent('bgcAudioFlagChange', {
+                        bgc_AudioFlag: true
+                    })
                     return
+                } else {
+                    await xrframe.handleShadowRotate(this)
+
                 }
                 this.setData({
                     trackerFlag: true
@@ -195,6 +200,9 @@ Component({
             }).catch(err => {
                 console.log(err)
             })
+
+        },
+        async LoadAssetsAfter() {
 
         },
         async startAnimatorAndVideo() {
@@ -260,47 +268,65 @@ Component({
                 this.handleTemplate3and4(p_ar.template_type)
                 await this.concatAndLoadAssets(p_ar)
             } else if (this.data.workflowType === 2) {
+                const {
+                    p_guide,
+                    p_scan,
+                    p_ending,
+                } = this.data.workflowData
                 let {
                     p_ar
                 } = this.data.p_arData
-                this.handleTemplate3and4(p_ar.template_type)
-                await this.concatAndLoadAssets(p_ar)
-                this.stay_duration = p_ar.stay_duration * 1000
-                this.Transform.setData({
-                    visible: true
-                })
-                await this.startAnimatorAndVideo()
-                // await this.StayPageShow()
+                if (p_guide && p_scan && p_ending && Object.keys(p_ar).length > 0) {
 
-                // const camera = this.camera = this.scene.getElementById('camera')
-                // this.scene.removeChild(this.markerShadow)
-                // camera.addChild(this.markerShadow)
-                if (p_ar.template_type === "模版四") return
-                let s = this.s = ({
-                    y
-                }) => {
-                    this.Transform.position.x -= y * 0.1
+                    this.handleTemplate3and4(p_ar.template_type)
+                    await this.concatAndLoadAssets(p_ar)
+                    this.stay_duration = p_ar.stay_duration * 1000
+                    this.Transform.setData({
+                        visible: true
+                    })
+                    await this.startAnimatorAndVideo()
+                    let timer
+                    await this.StayPageShow(timer)
+                    await this.gyroscope(p_ar)
+                    console.log(this.scene)
+                } else if (p_scan) {
+                    return
+                    await this.concatAndLoadAssets(p_ar, true)
+                } else if (Object.keys(p_ar).length > 0) {
+                    // console.log(p_ar.template_type,'p_ar.template_type')
+                    this.handleTemplate3and4(p_ar.template_type)
+                    await this.concatAndLoadAssets(p_ar)
+                    this.Transform.setData({
+                        visible: true
+                    })
+                    await this.startAnimatorAndVideo()
+                    await this.gyroscope(p_ar)
+
                 }
-                wx.startGyroscope({
-                    interval: 'ui',
-                    success() {
-                        wx.onGyroscopeChange(s)
-                    }
-                })
-
-                console.log(this.scene)
-
             }
 
 
         },
+        async gyroscope(p_ar) {
+            if (p_ar.template_type === "模版四") return
+            let s = this.s = ({
+                y
+            }) => {
+                this.Transform.position.x -= y * 0.1
+            }
+            await wx.startGyroscope({
+                interval: 'ui',
+                success() {
+                    wx.onGyroscopeChange(s)
+                }
+            })
+        },
         handleTemplate3and4(type) {
+            console.log('handleTemplate3and4,t', type)
             if (type === "模版三" || type === "模版四") {
-                this.triggerEvent('bgc_AudioFlagChange', {
-                    bgc_AudioFlag: true
-                })
+
                 this.innerAudioContext2 = wx.createInnerAudioContext({
-                    useWebAudioImplement: true // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
+                    useWebAudioImplement: false // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
                 })
                 console.log(xrframe.backgroundAudioList[type], 'xrframe.backgroundAudioList.type')
                 this.innerAudioContext2.src = xrframe.backgroundAudioList[type]

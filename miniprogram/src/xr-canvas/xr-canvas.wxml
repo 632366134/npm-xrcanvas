@@ -8,12 +8,12 @@
 
     </xr-node>
     <xr-node id="markerShadow" visible="{{false}}" node-id="markerShadow" position="0 0 0"></xr-node>
-    <xr-camera id="camera" node-id="camera" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera="{{trackerFlag2}}" target="{{trackerFlag2?'':'markerShadow'}}" position="0 1 4">
+    <xr-camera id="camera" node-id="camera" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera="{{trackerFlag2}}" target="{{trackerFlag2?'':'markerShadow'}}" position="0 2 4">
     </xr-camera>
     <xr-node node-id="lights">
         <xr-light type="ambient" color="1 1 1" intensity="0.1" />
         <xr-light type="directional" position="0 3 0" rotation="0 0 0" color="1 1 1" intensity="2.5" cast-shadow />
-        <xr-light type="directional" rotation="40 70 0" color="1 1 1" intensity="2" cast-shadow />
+        <xr-light type="directional" rotation="40 180 0" color="1 1 1" intensity="2" cast-shadow />
         <xr-light type="directional" rotation="40 250 0" color="1 1 1" intensity="2" cast-shadow />
     </xr-node>
 </xr-scene>

@@ -3,6 +3,7 @@ import {
     getArList
 } from '../xr-canvas/utils'
 import * as xrframe from '../xr-canvas/xrframe'
+var WxParse = require('../wxParse/wxParse');
 Component({
 
     /**
@@ -50,44 +51,70 @@ Component({
         eventFlag: false,
         event_image: '',
         event_url: '',
-        bgc_AudioFlag: false
+        bgc_AudioFlag: false,
+        loadingData: {
+            '模版一': {
+                imageUrl: '/assets/type1.png',
+                duration: 10,
+                progressColor: "#87CEEB"
+            },
+            '模版三': {
+                imageUrl: '/assets/type3.png',
+                duration: 10,
+                progressColor: "#00FF00",
+            },
+            '模版四': {
+                imageUrl: '/assets/type4.png',
+                duration: 30,
+                progressColor: "#808080"
+            },
+        },
+        percent: 0,
+        textDuration: 0
     },
     /**
      * 组件的方法列表
      */
     lifetimes: {
-        async attached() {
-            const d = await getArList("10,1")
-            console.log(d, 'ddddddd')
+        async ready() {
             if (this.data.workflowType === 2) {
                 const {
                     p_guide,
                     p_scan,
-                    p_loading,
                     p_ending,
                 } = this.data.workflowData
-                if (p_guide && p_scan && p_loading && p_ending) {
+                const {
+                    p_ar
+                } = this.data.p_arData
+                if (p_guide && p_scan && p_ending && Object.keys(p_ar).length > 0) {
                     await this.arCameraShow()
                     this.guideShow(p_guide)
-                } else if (p_guide !== null) {
-                    this.guideShow(p_guide, false)
-                } else if (p_scan !== null) {
+                } else if (p_guide) {
+                    this.guideShow(p_guide, true)
+                } else if (p_scan) {
                     await this.arCameraShow()
-
                     this.setData({
-                        // p_guideFlag: false,
                         p_scanFlag: true,
                         xrShow: true
                     })
-                } else if (p_loading !== null) {
+                } else if (Object.keys(p_ar).length > 0) {
+                    const {
+                        imageUrl,
+                        duration,
+                        progressColor
+                    } = this.data.loadingData[p_ar.template_type]
                     await this.arCameraShow()
                     this.setData({
-                        xrShow: true
+                        xrShow: true,
+                        // p_loadingFlag: true,
+                        // image_url: imageUrl,
+                        // textDuration: duration,
+                        // progressColor
                     })
+                } else if (p_ending) {
+                    this.stayPage()
                 } else {
-                    this.setData({
-                        p_endingFlag: true
-                    })
+                    throw '暂无数据'
                 }
             } else if (this.data.workflowType === 1) {
                 await this.arCameraShow()
@@ -110,7 +137,9 @@ Component({
             await xrframe.handleXRSupport(this)
         },
         async workflow1Fun() {
-            let result = this.data.workflowData
+            const {
+                result
+            } = await workflow()
             console.log(result, 'result')
             const {
                 p_guide
@@ -126,7 +155,7 @@ Component({
                 })
             }
         },
-        guideShow(p_guide) {
+        guideShow(p_guide, flag = false) {
             this.setData({
                 p_guideFlag: true
             })
@@ -145,6 +174,7 @@ Component({
                 }
                 this.innerAudioContext.onEnded(list)
             }
+            if (flag) return
             let timer = setTimeout(async () => {
                 await xrframe.getCameraAuthorize()
                 this.setData({
@@ -159,15 +189,27 @@ Component({
             detail
         }) {
             console.log(detail, 'loadingchange')
-            if (this.data.workflowData.p_loading) {
+            if (detail.handleAssetsLoaded) {
+                const {
+                    imageUrl,
+                    duration,
+                    progressColor
+                } = this.data.loadingData[detail.type]
+                console.log(imageUrl, duration, progressColor)
                 this.setData({
-                    p_loadingFlag: !detail.handleAssetsLoaded,
-                    p_scanFlag: false
+                    p_loadingFlag: detail.handleAssetsLoaded,
+                    p_scanFlag: false,
+                    image_url: imageUrl,
+                    textDuration: duration,
+                    progressColor
                 })
+
             } else {
                 this.setData({
-                    p_scanFlag: false
+                    p_loadingFlag: detail.handleAssetsLoaded,
+                    p_scanFlag: false,
                 })
+
             }
 
         },
@@ -175,11 +217,38 @@ Component({
             detail
         }) {
             console.log(detail, 'loadingProgress')
+            const {
+                index,
+                length
+            } = detail
+            this.setData({
+                percent: (index / length).toFixed(2) * 100
+            })
 
         },
         stayPage() {
             console.log('stayPage')
-            if (this.data.workflowData.p_ending) {
+            const {
+                eventFlag,
+                bgc_AudioFlag,
+                workflowData
+            } = this.data
+            if (eventFlag) {
+                this.setData({
+                    eventFlag: false
+                })
+            }
+            if (bgc_AudioFlag) {
+                this.setData({
+                    bgc_AudioFlag: false
+
+                })
+            }
+            if (workflowData.p_ending) {
+                var article = `<div>${workflowData.p_ending.text}</div>`;
+                var that = this;
+                WxParse.wxParse('article', 'html', article, that);
+
                 this.setData({
                     p_endingFlag: true,
                     xrShow: false
@@ -208,12 +277,24 @@ Component({
                 event_url: null
             })
         },
-        bgc_AudioFlagChange({
+        bgcAudioFlagChange({
             detail
         }) {
+            console.log(detail, 'bgc_audioflagchange')
             this.setData({
                 bgc_AudioFlag: detail.bgc_AudioFlag,
             })
-        }
+        },
+        bgcMusicChange() {
+            const node = this.selectComponent('#xr-canvas')
+            console.log(node.innerAudioContext2, 'innerAudioContext2')
+            if (node.innerAudioContext2.paused) {
+                node.innerAudioContext2.play()
+
+            } else {
+                node.innerAudioContext2.pause()
+            }
+
+        },
     }
 })

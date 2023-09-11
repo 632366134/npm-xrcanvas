@@ -12,6 +12,7 @@
     font-size: 32rpx;
     top: 50%;
     left: 50%;
+    z-index: 102;
     transform: translateX(-50%);
 }
 
@@ -27,8 +28,36 @@
     height: 100vh;
 }
 
+.p_loading {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+}
+
+.p_loading_image {
+    margin-top: -50%;
+}
+
+.progress-box {
+    width: 46vw;
+    font-size: 22px;
+    margin: 30rpx 0;
+}
+
+.waitText {
+    text-align: left;
+    font-size: 20rpx;
+    transform: translateX(-50%)  translateY(-50%);
+}
+
+.p_ending2 {
+    padding: 50rpx;
+}
+
 .p_scan_image,
-.p_loading_image,
 .p_guideFlag_image,
 .p_guideFlag_video,
 .p_ending_image {
@@ -42,6 +71,7 @@
     top: 0;
     z-index: 101;
 }
-.bgc_Audio_image{
+
+.bgc_Audio_image {
     width: 80rpx;
 }
