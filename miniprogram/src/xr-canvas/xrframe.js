@@ -244,9 +244,7 @@ export const concatArrayToObjects = (result, showModel) => {
 
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
-        console.log(scene, 'scene')
-        console.log(modelData, 'modelData')
-        console.log(markerShadow, 'markerShadow')
+        console.log(modelData.file_url,'modelData.file_url')
 
         await scene.assets.releaseAsset('gltf', modelData.uid);
         if (!modelData.file_url) throw '无资源URL';
@@ -355,7 +353,9 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             node.event.add('touch-shape', async () => {
                 that.triggerEvent('showInteractMedia', imageData.event);
                 clearTimeout(that.timer)
+                that.innerAudioContext2?.pause() // 播放
                 await that.StayPageShow()
+                
             });
         }
         if (!markerShadow || !node) return;

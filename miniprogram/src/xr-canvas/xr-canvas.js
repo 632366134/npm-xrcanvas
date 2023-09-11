@@ -63,6 +63,12 @@ Component({
             xrframe.releaseAssetList(this, this.list)
             wx.offGyroscopeChange(this.x)
             wx.stopGyroscope()
+            this.triggerEvent('bgc_AudioFlagChange', {
+                bgc_AudioFlag: false
+            })
+            this.innerAudioContext2?.stop()
+            this.innerAudioContext2?.destroy()
+            this.innerAudioContext2 = null
             if (this.x) {
                 this.x = null
             }
@@ -122,6 +128,8 @@ Component({
                 await this.StayPageShow(timer)
                 if (flag) return
                 await this.startAnimatorAndVideo()
+                this.innerAudioContext2?.play() // 播放
+
                 flag = true
 
             } else {
@@ -166,6 +174,10 @@ Component({
 
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
+                }, {
+                    composed: true,
+                    capturePhase: true,
+                    bubbles: true
                 })
                 await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
                 // await xrframe.addTemplateTextAnimator('模版四', this.scene, this)
@@ -173,7 +185,10 @@ Component({
 
 
                 await xrframe.handleShadowRotate(this)
-                if (this.data.workflowType === 2) return
+                if (this.data.workflowType === 2) {
+                    this.innerAudioContext2?.play() // 播放
+                    return
+                }
                 this.setData({
                     trackerFlag: true
                 })
@@ -187,6 +202,9 @@ Component({
         },
         async stopAnimatorAndVideo() {
             await xrframe.stopAnimatorAndVideo(this, true)
+        },
+        async stopAnimatorAndVideo2() {
+            console.log('222')
         },
         async StayPageShow(timer) {
             timer = this.timer = setTimeout(() => {
@@ -239,18 +257,20 @@ Component({
                         id: back_image_uid
                     }]
                 })
+                this.handleTemplate3and4(p_ar.template_type)
                 await this.concatAndLoadAssets(p_ar)
             } else if (this.data.workflowType === 2) {
                 let {
                     p_ar
                 } = this.data.p_arData
+                this.handleTemplate3and4(p_ar.template_type)
                 await this.concatAndLoadAssets(p_ar)
                 this.stay_duration = p_ar.stay_duration * 1000
                 this.Transform.setData({
                     visible: true
                 })
                 await this.startAnimatorAndVideo()
-                await this.StayPageShow()
+                // await this.StayPageShow()
 
                 // const camera = this.camera = this.scene.getElementById('camera')
                 // this.scene.removeChild(this.markerShadow)
@@ -274,6 +294,20 @@ Component({
 
 
         },
+        handleTemplate3and4(type) {
+            if (type === "模版三" || type === "模版四") {
+                this.triggerEvent('bgc_AudioFlagChange', {
+                    bgc_AudioFlag: true
+                })
+                this.innerAudioContext2 = wx.createInnerAudioContext({
+                    useWebAudioImplement: true // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
+                })
+                console.log(xrframe.backgroundAudioList[type], 'xrframe.backgroundAudioList.type')
+                this.innerAudioContext2.src = xrframe.backgroundAudioList[type]
+                this.innerAudioContext2.loop = true
+                // await xrframe.audioFadeOut(this.innerAudioContext2)
+            }
+        }
 
 
     }
