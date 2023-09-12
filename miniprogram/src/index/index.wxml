@@ -12,7 +12,7 @@
         <image class="p_loading_image" src="{{image_url}}" mode="aspectFit" />
         <text>AR场景元素加载中...</text>
         <view class="progress-box">
-            <progress stroke-width="8" border-radius="20" activeColor="{{progressColor}}" backgroundColor="#999" percent="{{percent}}"  />
+            <progress stroke-width="8" border-radius="20" activeColor="{{progressColor}}" backgroundColor="#999" percent="{{percent}}" />
         </view>
         <view class="waitText">预计等待时间{{textDuration}}秒...</view>
 
@@ -25,7 +25,7 @@
         <image class="p_guideFlag_image" wx:if="{{event_image}}" src="{{event_image}}" mode="aspectFit" />
         <video controls="{{false}}" autoplay class="p_guideFlag_video" wx:if="{{event_url}}" src="{{event_url}}" />
     </view>
-    <view class="bgc_Audio" wx:if="{{bgc_AudioFlsag}}" bind:tap="bgcMusicChange">
+    <view class="bgc_Audio" wx:if="{{bgc_AudioFlag}}" bind:tap="bgcMusicChange">
         <image class="bgc_Audio_image" src="/assets/soundsize.png" mode="aspectFit" />
     </view>
 </view>

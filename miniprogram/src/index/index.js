@@ -76,7 +76,8 @@ Component({
      * 组件的方法列表
      */
     lifetimes: {
-        async ready() {
+        async attached() {
+            console.log(this.data.workflowType)
             if (this.data.workflowType === 2) {
                 const {
                     p_guide,
@@ -86,24 +87,28 @@ Component({
                 const {
                     p_ar
                 } = this.data.p_arData
-                if (p_guide && p_scan && p_ending && Object.keys(p_ar).length > 0) {
+                if (p_guide && p_scan && p_ending && p_ar && Object.keys(p_ar).length > 0) {
                     await this.arCameraShow()
+                    await xrframe.getCameraAuthorize()
                     this.guideShow(p_guide)
                 } else if (p_guide) {
                     this.guideShow(p_guide, true)
                 } else if (p_scan) {
                     await this.arCameraShow()
+                    await xrframe.getCameraAuthorize()
+
                     this.setData({
                         p_scanFlag: true,
                         xrShow: true
                     })
-                } else if (Object.keys(p_ar).length > 0) {
-                    const {
-                        imageUrl,
-                        duration,
-                        progressColor
-                    } = this.data.loadingData[p_ar.template_type]
+                } else if (p_ar && Object.keys(p_ar).length > 0) {
+                    // const {
+                    //     imageUrl,
+                    //     duration,
+                    //     progressColor
+                    // } = this.data.loadingData[p_ar.template_type]
                     await this.arCameraShow()
+                    await xrframe.getCameraAuthorize()
                     this.setData({
                         xrShow: true,
                         // p_loadingFlag: true,
@@ -118,6 +123,7 @@ Component({
                 }
             } else if (this.data.workflowType === 1) {
                 await this.arCameraShow()
+                await xrframe.getCameraAuthorize()
                 await this.workflow1Fun()
             } else {
 
@@ -140,15 +146,19 @@ Component({
             const {
                 result
             } = await workflow()
+            result.p_ending = null
+
             console.log(result, 'result')
+            this.setData({
+                workflowData: result
+            })
             const {
                 p_guide
             } = result
+
             if (p_guide) {
                 this.guideShow(p_guide)
             } else {
-                await xrframe.getCameraAuthorize()
-
                 this.setData({
                     p_scanFlag: true,
                     xrShow: true
@@ -176,7 +186,6 @@ Component({
             }
             if (flag) return
             let timer = setTimeout(async () => {
-                await xrframe.getCameraAuthorize()
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
@@ -263,12 +272,19 @@ Component({
                 image_url,
                 video_url
             } = detail
-            if (!image_url && !video_url) return
-            this.setData({
-                eventFlag: true,
-                event_image: image_url,
-                event_url: video_url
-            })
+            if (image_url) {
+                this.setData({
+                    eventFlag: true,
+                    event_image: image_url,
+                })
+            }
+            if (video_url) {
+                this.setData({
+                    eventFlag: true,
+                    event_url: video_url
+                })
+            }
+
         },
         eventFlagChange() {
             this.setData({

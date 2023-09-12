@@ -167,13 +167,20 @@ export const recognizeCigarette = (scene) => {
             }
             console.log('XR-FRAME 烟包识别接口', recognizedResult);
             if (recognizedResult.err_code !== 0) throw recognizedResult.err_desc || null;
-            if (recognizedResult.result.p_ar === null) {
+            const {
+                result
+            } = recognizedResult
+
+            if (!!!result.p_ar && !!!result.sku) {
+                return resolve(await recognizeCigarette(scene))
+            } else if (!!!result.p_ar && !!result.sku) {
                 wx.showToast({
                     title: '暂无ar效果',
                     duration: 1000,
                     icon: 'none'
                 })
                 return resolve(await recognizeCigarette(scene))
+
             } else {
                 return resolve(recognizedResult.result);
             }
@@ -244,7 +251,7 @@ export const concatArrayToObjects = (result, showModel) => {
 
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
-        console.log(modelData.file_url,'modelData.file_url')
+        console.log(modelData.file_url, 'modelData.file_url')
 
         await scene.assets.releaseAsset('gltf', modelData.uid);
         if (!modelData.file_url) throw '无资源URL';
@@ -342,11 +349,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             geometry: scene.assets.getAsset('geometry', 'plane'),
             uid: imageData.uid,
         });
-        if (!textList) return
-        that.textList.push({
-            node: node,
-            '3d_info': imageData['3d_info'],
-        });
+
         node.setAttribute('states', 'cullOn: false');
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
@@ -355,11 +358,17 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 播放
                 await that.StayPageShow()
-                
+
             });
         }
         if (!markerShadow || !node) return;
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
+        if (!textList) return
+        if (imageData.location === "right") return
+        that.textList.push({
+            node: node,
+            '3d_info': imageData['3d_info'],
+        });
         return;
     } catch (err) {
         console.error('XR-FRAME: 图片素材加载错误: ', err);
@@ -410,18 +419,18 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
             return
         }
         console.log(that.textList, 'textList')
-        for (let index in that.textList) {
-            let animator = that.textList[index].node.addComponent(XRFrameSystem.Animator);
+        for (let [index, item] of that.textList.entries()) {
+            let animator = item.node.addComponent(XRFrameSystem.Animator);
 
             switch (template) {
                 case '模版一':
-                    var keyframe = generateTemplate1KeyFrame(Object.values(that.textList[index]['3d_info'].scale), index, 0, 2.5);
+                    var keyframe = generateTemplate1KeyFrame(Object.values(item['3d_info'].scale), index, 0, 2.5);
                     break;
                 case '模版二':
-                    var keyframe = generateTemplate2KeyFrame(Object.values(that.textList[index]['3d_info'].position), index);
+                    var keyframe = generateTemplate2KeyFrame(Object.values(item['3d_info'].position), index);
                     break;
                 case '模版三':
-                    var keyframe = generateTemplate3KeyFrame(Object.values(that.textList[index]['3d_info'].scale));
+                    var keyframe = generateTemplate3KeyFrame(Object.values(item['3d_info'].scale));
             }
             animator.addAnimation(new XRFrameSystem.KeyframeAnimation(
                 scene,
@@ -489,7 +498,13 @@ export const handleShadowRotate = (that) => {
                     clientY: event.touches[0].clientY,
                 }
             });
-            shadowRotateY(xMove, that.markerShadow);
+            if (that.data.workflowType === 2 && that.data.p_arData.p_ar.template_type === "模版四") {
+                shadowRotateY(xMove, that.markerShadow2);
+
+            } else {
+                shadowRotateY(xMove, that.markerShadow);
+
+            }
         }
         that.handleTouchEnd = (event) => {
             that.scene.event.remove('touchmove', that.handleTouchMove)
