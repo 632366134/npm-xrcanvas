@@ -54,6 +54,14 @@ Component({
                     trackerFlag2: true,
                     position
                 })
+            } else if (this.data.workflowType === 3) {
+                this.setData({
+                    arReadyFlag: true,
+                    modes: "Marker",
+                    trackerFlag2: true,
+                    trackerFlag: true,
+                    position
+                })
             } else {
                 if (this.data.p_arData.p_ar?.template_type === "模版四") {
                     position = [0, 0, 4]
@@ -274,7 +282,7 @@ Component({
                 let {
                     p_ar
                 } = await xrframe.recognizeCigarette(this.scene)
-              
+
                 const {
                     front_image_url,
                     front_image_uid,
@@ -282,7 +290,6 @@ Component({
                     back_image_uid
                 } = p_ar.cigarette
                 this.stay_duration = p_ar.stay_duration * 1000
-                console.log(p_ar, 'result')
                 this.setData({
                     obsList: [{
                         url: front_image_url,
@@ -333,10 +340,39 @@ Component({
                     await this.gyroscope(p_ar)
 
                 }
+            } else if (this.data.workflowType === 3) {
+                const obsList = []
+                const {
+                    cigarette
+                } = this.data.workflowData
+                for (const obj of cigarette) {
+                    if (!!obj.front_image_url && !!obj.front_image_uid) {
+                        const o = {
+                            url: obj.front_image_url,
+                            id: obj.front_image_uid
+                        }
+                        obsList.push(o)
+                    } else if (!!obj.back_image_url && !!obj.back_image_uid) {
+                        const o = {
+                            url: obj.back_image_url,
+                            id: obj.back_image_uid
+                        }
+                        obsList.push(o)
+                    } else {
+
+                    }
+                }
+                // this.stay_duration = p_ar.stay_duration * 1000
+                this.setData({
+                    obsList
+                })
+                // this.handleTemplate3and4(p_ar.template_type)
+                // await this.concatAndLoadAssets(p_ar)
             }
 
 
         },
+        createObslist() {},
         async gyroscope(p_ar) {
             if (p_ar.template_type === "模版四") return
             let s = this.s = ({
