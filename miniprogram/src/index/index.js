@@ -146,9 +146,6 @@ Component({
             const {
                 result
             } = await workflow()
-            result.p_ending = null
-
-            console.log(result, 'result')
             this.setData({
                 workflowData: result
             })

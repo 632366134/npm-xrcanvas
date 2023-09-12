@@ -4,15 +4,31 @@ import {
 } from '../../src/xr-canvas/utils'
 Page({
     data: {
-        workflowType: 2,
+        workflowType: 3,
         p_arData: {},
         workflowData: {
             "p_guide_uid": "",
-            "p_guide":null,
+            "p_guide": null,
             "p_scan_uid": "",
-            "p_scan": null,
+            "p_scan": {
+                "uid": "ms-ci8knpc9aqpqkpa4bu3g",
+                "name": "扫描页",
+                "image_uid": "f-ci8knos9aqpqkpa4bu20",
+                "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/images/d8ee79214bf0f8149d83fa7b852d3611.png"
+            },
+            "p_loading_uid": "",
+            "p_loading": {
+                "uid": "ml-cj0sjss9aqpn3j2l3vsg",
+                "name": "徽商加载2",
+                "image_uid": "f-cj0sjr49aqpn3j2l3vr0",
+                "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/14f9785996fbaf38de6242a06b586232.jpeg"
+            },
             "p_ending_uid": "",
-            "p_ending":null,
+            "p_ending": {
+                "uid": "me-cj129r49aqplk7mqgjgg",
+                "name": "123123123123",
+                "text": "<p><br></p>"
+            },
             "cigarettes": [{
                     "uid": "",
                     "sku": "黄山(徽商新概念细支)",
