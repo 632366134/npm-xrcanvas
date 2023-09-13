@@ -59,7 +59,6 @@ Component({
                     arReadyFlag: true,
                     modes: "Marker",
                     trackerFlag2: true,
-                    trackerFlag: true,
                     position
                 })
             } else {
@@ -141,17 +140,27 @@ Component({
                 handleTrackerSwitch: active
             })
             if (active) {
-                this.Transform.setData({
-                    visible: true
-                })
-                await this.StayPageShow(timer)
-                if (flag) return
-                await this.startAnimatorAndVideo()
-                this.innerAudioContext2?.play() // 播放
-                this.triggerEvent('bgcAudioFlagChange', {
-                    bgc_AudioFlag: true
-                })
-                flag = true
+                if (this.data.workflowType === 3) {
+                    let {
+                        p_ar
+                    } = await xrframe.recognizeCigarette(this.scene)
+                    this.stay_duration = p_ar.stay_duration * 1000
+                    this.handleTemplate3and4(p_ar.template_type)
+                    await this.concatAndLoadAssets(p_ar)
+                } else {
+
+                    this.Transform.setData({
+                        visible: true
+                    })
+                    await this.StayPageShow(timer)
+                    if (flag) return
+                    await this.startAnimatorAndVideo()
+                    this.innerAudioContext2?.play() // 播放
+                    this.triggerEvent('bgcAudioFlagChange', {
+                        bgc_AudioFlag: true
+                    })
+                    flag = true
+                }
 
             } else {
                 clearTimeout(timer)
@@ -289,7 +298,6 @@ Component({
                     back_image_url,
                     back_image_uid
                 } = p_ar.cigarette
-                this.stay_duration = p_ar.stay_duration * 1000
                 this.setData({
                     obsList: [{
                         url: front_image_url,
@@ -299,6 +307,7 @@ Component({
                         id: back_image_uid
                     }]
                 })
+                this.stay_duration = p_ar.stay_duration * 1000
                 this.handleTemplate3and4(p_ar.template_type)
                 await this.concatAndLoadAssets(p_ar)
             } else if (this.data.workflowType === 2) {
@@ -344,27 +353,45 @@ Component({
                 const obsList = []
                 const {
                     cigarette
-                } = this.data.workflowData
-                for (const obj of cigarette) {
-                    if (!!obj.front_image_url && !!obj.front_image_uid) {
-                        const o = {
-                            url: obj.front_image_url,
-                            id: obj.front_image_uid
-                        }
-                        obsList.push(o)
-                    } else if (!!obj.back_image_url && !!obj.back_image_uid) {
-                        const o = {
-                            url: obj.back_image_url,
-                            id: obj.back_image_uid
-                        }
-                        obsList.push(o)
-                    } else {
+                } = this.data.p_arData
+                if (Array.isArray(cigarette)) {
+                    console.log('参数是数组');
+                    this.setData({
+                        obsList: [{
+                            url: front_image_url,
+                            id: front_image_uid
+                        }, {
+                            url: back_image_url,
+                            id: back_image_uid
+                        }]
+                    })
+                } else if (typeof cigarette === 'object' && cigarette !== null) {
+                    for (const obj of cigarette) {
+                        if (!!obj.front_image_url && !!obj.front_image_uid) {
+                            const o = {
+                                url: obj.front_image_url,
+                                id: obj.front_image_uid
+                            }
+                            obsList.push(o)
+                        } else if (!!obj.back_image_url && !!obj.back_image_uid) {
+                            const o = {
+                                url: obj.back_image_url,
+                                id: obj.back_image_uid
+                            }
+                            obsList.push(o)
+                        } else {
 
+                        }
                     }
+                } else {
+                    console.log('参数不是数组也不是对象');
+                    throw '识别图错误!'
                 }
+
                 // this.stay_duration = p_ar.stay_duration * 1000
                 this.setData({
-                    obsList
+                    obsList,
+                    trackerFlag: true,
                 })
                 // this.handleTemplate3and4(p_ar.template_type)
                 // await this.concatAndLoadAssets(p_ar)

@@ -1,6 +1,7 @@
 import {
     workflow,
-    getArList
+    getArList,
+    getmyworkList
 } from '../xr-canvas/utils'
 import * as xrframe from '../xr-canvas/xrframe'
 var WxParse = require('../wxParse/wxParse');
@@ -125,6 +126,10 @@ Component({
                 await this.arCameraShow()
                 await xrframe.getCameraAuthorize()
                 await this.workflow1Fun()
+            } else if (this.data.workflowType === 3) {
+                await this.arCameraShow()
+                await xrframe.getCameraAuthorize()
+                await this.getWorkList()
             } else {
 
             }
@@ -138,6 +143,29 @@ Component({
         }
     },
     methods: {
+        async getWorkList() {
+            let {
+                result
+            } = await getmyworkList(`?pl=1,0`)
+            result=result.works[0]
+            this.setData({
+                workflowData: result,
+                p_arData: result.p_ar
+            })
+            console.log(result,'result')
+            const {
+                p_guide
+            } = result
+
+            if (p_guide) {
+                this.guideShow(p_guide)
+            } else {
+                this.setData({
+                    p_scanFlag: true,
+                    xrShow: true
+                })
+            }
+        },
         async arCameraShow() {
             await xrframe.initXRFrame(this)
             await xrframe.handleXRSupport(this)

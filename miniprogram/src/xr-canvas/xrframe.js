@@ -141,8 +141,8 @@ export const audioFadeOut = (audioContext) => {
     });
 }
 
-export const saveSceneAsImage = (scene) => {
-    let base64 = scene.share.captureToDataURL({
+export const saveSceneAsImage =async (scene) => {
+    let base64 = await scene.share.captureToDataURLAsync({
         type: 'jpg',
         quality: 0.8
     });
@@ -160,7 +160,7 @@ export const recognizeCigarette = (scene) => {
                 let rgbData = YUVUtils.arRawDataToRGB(scene);
                 var recognizedResult = await homeRecognizeYUV(rgbData);
             } else {
-                let imagePath = saveSceneAsImage(scene);
+                let imagePath = await saveSceneAsImage(scene);
                 var recognizedResult = await homeRecognize(imagePath);
 
                 recognizedResult = JSON.parse(recognizedResult);

@@ -74,3 +74,20 @@ export const getArList  = (data) => {
         });
     });
 }
+export const getmyworkList  = (data) => {
+    return new Promise((resolve, reject) => {
+        wx.request({
+            url: url + `/api/m/ar/ugc/works${data}`,
+            method: 'GET',
+            header: {
+                'Authorization': Authorization
+            },
+            success(res) {
+                resolve(res.data);
+            },
+            fail(err) {
+                reject(err);
+            }
+        });
+    });
+}
