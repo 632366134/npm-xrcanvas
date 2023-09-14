@@ -8,7 +8,12 @@ Page({
         p_arData: {},
         workflowData: {
             "p_guide_uid": "",
-            "p_guide": null,
+            "p_guide": {
+                "uid": "ml-cj0sjss9aqpn3j2l3vsg",
+                "name": "徽商加载2",
+                "image_uid": "f-cj0sjr49aqpn3j2l3vr0",
+                "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/14f9785996fbaf38de6242a06b586232.jpeg"
+            },
             "p_scan_uid": "",
             "p_scan": {
                 "uid": "ms-ci8knpc9aqpqkpa4bu3g",

@@ -141,7 +141,7 @@ export const audioFadeOut = (audioContext) => {
     });
 }
 
-export const saveSceneAsImage =async (scene) => {
+export const saveSceneAsImage = async (scene) => {
     let base64 = await scene.share.captureToDataURLAsync({
         type: 'jpg',
         quality: 0.8
@@ -152,7 +152,7 @@ export const saveSceneAsImage =async (scene) => {
     return ImagePath;
 }
 
-export const recognizeCigarette = (scene) => {
+export const recognizeCigarette = (scene, that = null) => {
     return new Promise(async (resolve) => {
         try {
             if (!scene._components) return resolve('break');
@@ -170,7 +170,24 @@ export const recognizeCigarette = (scene) => {
             const {
                 result
             } = recognizedResult
+            if (that && that.data.workflowType === 3) {
+                if (result.sku === that.data.p_arData.cigarette.sku) {
+                    wx.showToast({
+                        title: '规格匹配成功',
+                        duration: 1000,
+                        icon: 'none'
+                    })
+                    return resolve(recognizedResult.result);
+                } else {
+                    wx.showToast({
+                        title: '规格匹配失败',
+                        duration: 1000,
+                        icon: 'none'
+                    })
+                    return resolve(await recognizeCigarette(scene, that))
 
+                }
+            }
             if (!!!result.p_ar && !!!result.sku) {
                 return resolve(await recognizeCigarette(scene))
             } else if (!!!result.p_ar && !!result.sku) {
@@ -354,6 +371,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
             node.event.add('touch-shape', async () => {
+                if(that.data.workflowType ===3 && !that.firstFlag) return
                 that.triggerEvent('showInteractMedia', imageData.event);
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 播放

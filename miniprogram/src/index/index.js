@@ -146,8 +146,8 @@ Component({
         async getWorkList() {
             let {
                 result
-            } = await getmyworkList(`?pl=1,0`)
-            result=result.works[0]
+            } = await getmyworkList(`?pl=10,0`)
+            result=result.works[1]
             this.setData({
                 workflowData: result,
                 p_arData: result.p_ar
@@ -182,13 +182,39 @@ Component({
             } = result
 
             if (p_guide) {
-                this.guideShow(p_guide)
+                this.type3guideShow(p_guide)
             } else {
                 this.setData({
                     p_scanFlag: true,
                     xrShow: true
                 })
             }
+        },
+        type3guideShow(p_guide) {
+            this.setData({
+                p_guideFlag: true,
+                xrShow: true
+            })
+            if (p_guide.audio_url) {
+                this.innerAudioContext = wx.createInnerAudioContext({
+                    useWebAudioImplement: true // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
+                })
+                this.innerAudioContext.src = p_guide.audio_url
+                this.innerAudioContext.play() // 播放
+                const list = () => {
+                    this.innerAudioContext.offEnded(list)
+                    this.innerAudioContext.stop()
+                    this.innerAudioContext.destroy()
+                }
+                this.innerAudioContext.onEnded(list)
+            }
+            let timer = setTimeout(async () => {
+                this.setData({
+                    p_guideFlag: false,
+                    p_scanFlag: true,
+                })
+                clearTimeout(timer)
+            }, p_guide.duration * 1000);
         },
         guideShow(p_guide, flag = false) {
             this.setData({

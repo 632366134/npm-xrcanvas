@@ -1,5 +1,5 @@
 <view class="container">
-    <xr-canvas id="xr-canvas" wx:if="{{xrShow}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;z-index: 99; " bind:handleAssetsLoaded="loadingChange" bind:handleAssetsProgress="loadingProgress" bind:stayPage="stayPage" workflowType="{{workflowType}}" p_arData="{{p_arData}}" workflowData="{{workflowData}}" bind:showInteractMedia="showInteractMedia" bind:bgcAudioFlagChange="bgcAudioFlagChange"></xr-canvas>
+    <xr-canvas id="xr-canvas" wx:if="{{xrShow}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;z-index: 99; " bind:handleAssetsLoaded="loadingChange" bind:handleAssetsProgress="loadingProgress" bind:stayPage="stayPage" workflowType="{{workflowType}}" p_arData="{{p_arData}}" workflowData="{{workflowData}}" bind:showInteractMedia="showInteractMedia" bind:bgcAudioFlagChange="bgcAudioFlagChange" p_scanFlag="{{p_scanFlag}}"></xr-canvas>
     <view class="error" wx:if="{{unSupport}}">{{unSupport}}</view>
     <view class="p_guide" wx:if="{{p_guideFlag}}">
         <image class="p_guideFlag_image" wx:if="{{workflowData.p_guide.image_url}}" src="{{workflowData.p_guide.image_url}}" mode="" />
