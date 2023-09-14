@@ -4,7 +4,7 @@ import {
 } from '../../src/xr-canvas/utils'
 Page({
     data: {
-        workflowType: 3,
+        workflowType:4,
         p_arData: {},
         workflowData: {
             "p_guide_uid": "",
@@ -100,6 +100,8 @@ Page({
                 }
             ]
         },
+        width:400,
+        height:400,
         flag: false
     },
     async onLoad() {

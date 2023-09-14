@@ -191,7 +191,6 @@ Component({
 
 
                 } else {
-                    this.active =fasle
                     this.Transform.setData({
                         visible: true
                     })
