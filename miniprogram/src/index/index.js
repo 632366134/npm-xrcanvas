@@ -22,6 +22,14 @@ Component({
         p_arData: {
             type: Object,
             default: {}
+        },
+        screenListRaw: {
+            type: Array,
+            default: []
+        },
+        textListRaw: {
+            type: Array,
+            default: []
         }
 
     },
@@ -71,7 +79,8 @@ Component({
             },
         },
         percent: 0,
-        textDuration: 0
+        textDuration: 0,
+        loadingShow: false
     },
     /**
      * 组件的方法列表
@@ -130,6 +139,22 @@ Component({
                 await this.arCameraShow()
                 await xrframe.getCameraAuthorize()
                 await this.getWorkList()
+            } else if (this.data.workflowType === 4) {
+                await xrframe.initXRFrame(this)
+                await xrframe.handleXRSupport(this)
+                // let screenListRaw = this.data.p_arData.p_ar.screen_list
+                // delete this.data.p_arData.p_ar.screen_list
+                this.setData({
+                    loadingShow: true,
+                    // p_arData: this.data.p_arData,
+                    // screenListRaw
+                })
+                // screenListRaw[1].file_url="https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/images/18ead05029aa0d145111ff37f7843472.png"
+                // setTimeout(() => {
+                //     this.setData({
+                //         screenListRaw
+                //     })
+                // }, 8000);
             } else {
 
             }
@@ -147,12 +172,12 @@ Component({
             let {
                 result
             } = await getmyworkList(`?pl=10,0`)
-            result=result.works[1]
+            result = result.works[1]
             this.setData({
                 workflowData: result,
                 p_arData: result.p_ar
             })
-            console.log(result,'result')
+            console.log(result, 'result')
             const {
                 p_guide
             } = result

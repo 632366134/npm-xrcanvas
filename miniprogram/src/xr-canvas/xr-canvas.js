@@ -5,7 +5,6 @@ const STATE = {
 }
 let prevValue;
 import './remove-black';
-import jsonData from './test'
 import * as xrframe from './xrframe'
 import {
     getArList

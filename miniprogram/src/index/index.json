@@ -1,7 +1,8 @@
 {
     "component": true,
     "usingComponents": {
-        "xr-canvas": "../xr-canvas/xr-canvas"
+        "xr-canvas": "../xr-canvas/xr-canvas",
+        "canvas-loading":"../canvas-loading/canvas-loading"
     }
 
 }

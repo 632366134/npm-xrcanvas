@@ -3,8 +3,6 @@ import {
     homeRecognizeYUV
 } from '/utils';
 import * as YUVUtils from './yuv';
-// import '../xr-custom/effects/removeBlack';
-// import '../xr-custom/effects/transparentVideo'
 import {
     generateTemplate1KeyFrame
 } from './template1';
@@ -319,7 +317,8 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         });
         if (!scene) return;
         let material = await scene.createMaterial(
-            await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
+            // await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
+            await scene.assets.getAsset('effect','standard'), {
                 u_baseColorMap: video.texture,
             }
         );
@@ -365,13 +364,18 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
             uid: imageData.uid,
-        });
+            id:imageData.file_uid
 
+        });
+        node.setId(imageData.file_uid)
         node.setAttribute('states', 'cullOn: false');
+        if(that.data.workflowType===4&&that.nodeList){
+            that.nodeList.push(node)
+        }
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
             node.event.add('touch-shape', async () => {
-                if(that.data.workflowType ===3 && !that.firstFlag) return
+                if (that.data.workflowType === 3 && !that.firstFlag) return
                 that.triggerEvent('showInteractMedia', imageData.event);
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 播放
@@ -519,6 +523,10 @@ export const handleShadowRotate = (that) => {
             if (that.data.workflowType === 2 && that.data.p_arData.p_ar.template_type === "模版四") {
                 shadowRotateY(xMove, that.markerShadow2);
 
+            } else if (that.data.workflowType === 4) {
+                shadowPositionY(yMove, that.markerShadow);
+                shadowPositionX(xMove, that.markerShadow);
+
             } else {
                 shadowRotateY(xMove, that.markerShadow);
 
@@ -537,6 +545,14 @@ export const handleShadowRotate = (that) => {
 export const shadowRotateY = (deltaX, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     transform.rotation.y += deltaX / 200;
+}
+export const shadowPositionY = (deltaY, markerShadow) => {
+    const transform = markerShadow.getComponent(XRFrameSystem.Transform);
+    transform.position.y += deltaY / 100;
+}
+export const shadowPositionX = (deltaX, markerShadow) => {
+    const transform = markerShadow.getComponent(XRFrameSystem.Transform);
+    transform.position.x += deltaX / 100;
 }
 
 export const handleTemplate4KeyFrame = (that) => {

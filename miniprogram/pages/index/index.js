@@ -110,7 +110,7 @@ Page({
         } = await getArList("10,1")
         console.log(result, 'd')
         this.setData({
-            p_arData: result.items[2],
+            p_arData: result.items[7],
             flag: true
         })
     },
