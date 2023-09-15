@@ -30,6 +30,14 @@ Component({
         textListRaw: {
             type: Array,
             default: []
+        },
+       XRHeight: {
+            type: Number,
+            default: null
+        },
+        XRWidth: {
+            type: Number,
+            default: null
         }
 
     },
@@ -140,7 +148,7 @@ Component({
                 await xrframe.getCameraAuthorize()
                 await this.getWorkList()
             } else if (this.data.workflowType === 4) {
-                await xrframe.initXRFrame(this)
+                await xrframe.initXRFrame(this, this.data.XRWidth, this.data.XRHeight)
                 await xrframe.handleXRSupport(this)
                 // let screenListRaw = this.data.p_arData.p_ar.screen_list
                 // delete this.data.p_arData.p_ar.screen_list
@@ -169,18 +177,18 @@ Component({
     },
     methods: {
         async getWorkList() {
-            let {
-                result
-            } = await getmyworkList(`?pl=10,0`)
-            result = result.works[1]
-            this.setData({
-                workflowData: result,
-                p_arData: result.p_ar
-            })
+            // let {
+            //     result
+            // } = await getmyworkList(`?pl=10,0`)
+            // result = result.works[1]
+            // this.setData({
+            //     workflowData: result,
+            //      : result.p_ar
+            // })
             console.log(result, 'result')
             const {
                 p_guide
-            } = result
+            } = this.data.workflowData
 
             if (p_guide) {
                 this.guideShow(p_guide)

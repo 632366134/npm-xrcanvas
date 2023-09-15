@@ -160,7 +160,7 @@ Component({
                     } = await xrframe.recognizeCigarette(this.scene, this)
                     if (this.data.Assetsloaded) {
 
-                
+
                         if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
                             await this.StayPageShow(timer)
                         }
