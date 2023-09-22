@@ -170,22 +170,14 @@ Component({
 
         },
         detached() {
-            this.setData({
-                xrShow: false
-            })
+            // this.setData({
+            //     xrShow: false
+            // })
         }
     },
     methods: {
         async getWorkList() {
-            // let {
-            //     result
-            // } = await getmyworkList(`?pl=10,0`)
-            // result = result.works[1]
-            // this.setData({
-            //     workflowData: result,
-            //      : result.p_ar
-            // })
-            // console.log(result, 'result'
+           console.log(this.data.workflowData,'workflowDataworkflowDataworkflowData')
             const {
                 p_guide
             } = this.data.workflowData
@@ -320,7 +312,7 @@ Component({
 
         },
         stayPage() {
-            console.log('stayPage')
+            console.log('stayPage',this.data.workflowData)
             const {
                 eventFlag,
                 bgc_AudioFlag,

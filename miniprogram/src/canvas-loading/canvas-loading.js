@@ -94,7 +94,67 @@ Component({
             this.textList = []
             this.animatorList = []
             this.videoList = []
-        }
+        },
+        detached() {
+            console.log('detacheddetacheddetached',this.list)
+            if (this.list?.length >= 0) {
+                xrframe.releaseAssetList(this, this.list)
+                this.list =[]
+            }
+            this.triggerEvent('bgc_AudioFlagChange', {
+                bgc_AudioFlag: false
+            })
+            this.innerAudioContext2?.stop()
+            this.innerAudioContext2?.destroy()
+            this.innerAudioContext2 = null
+            if (this.x) {
+                this.x = null
+                wx.offGyroscopeChange(this.x)
+                wx.stopGyroscope()
+            }
+            if(this.timer2){
+                clearTimeout(this.timer2)
+            }
+            if(this.timer1){
+                clearTimeout(this.timer1)
+            }
+            if (this.scene) {
+                this.scene = null
+            }
+            if (this.anchor) {
+                this.anchor = null
+            }
+            if (this.trs) {
+                this.trs = null
+            }
+            if (this.GLTF) {
+                this.GLTF = null
+            }
+            if (this.xrgltf) {
+                this.xrgltf = null
+            }
+            if (this.tmpV3) {
+                this.tmpV3 = null
+            }
+            if (this.gltfModel) {
+                this.gltfModel = null
+            }
+            if (this.gltfModel) {
+                this.gltfModel = null
+            }
+            if (this.gltfModel) {
+                this.gltfModel = null
+            }
+            if (this.gltfItemSubTRS) {
+                this.gltfItemSubTRS = null
+            }
+            if (this.videoTRS) {
+                this.videoTRS = null
+            }
+            if (this.gltfItemTRS) {
+                this.gltfItemTRS = null
+            }
+        },
     },
     /**
      * 组件的方法列表
@@ -137,6 +197,7 @@ Component({
             const {
                 p_ar
             } = this.data.p_arData
+            this.i=1
             const list = this.list = await xrframe.concatArrayToObjects(p_ar, true)
             if (list.length === 0) return
             const promiseList = []

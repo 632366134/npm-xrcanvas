@@ -90,10 +90,12 @@ Component({
                 })
             }
         },
-        detached() {
-            xrframe.releaseAssetList(this, this.list)
-            wx.offGyroscopeChange(this.x)
-            wx.stopGyroscope()
+      async  detached() {
+           await  this.stopAnimatorAndVideo()
+            if (this.list?.length >= 0) {
+                xrframe.releaseAssetList(this, this.list)
+                this.list = []
+            }
             this.triggerEvent('bgc_AudioFlagChange', {
                 bgc_AudioFlag: false
             })
@@ -102,6 +104,14 @@ Component({
             this.innerAudioContext2 = null
             if (this.x) {
                 this.x = null
+                wx.offGyroscopeChange(this.x)
+                wx.stopGyroscope()
+            }
+            if (this.timer2) {
+                clearTimeout(this.timer2)
+            }
+            if (this.timer) {
+                clearTimeout(this.timer)
             }
             if (this.scene) {
                 this.scene = null
@@ -166,8 +176,8 @@ Component({
                         }
                         if (!this.firstFlag) {
                             await xrframe.handleShadowRotate(this)
-                            this.handleTemplate3and4(this.data.p_arData.template_type)
-                            this.stay_duration = this.data.p_arData.stay_duration * 1000
+                            this.handleTemplate3and4(this.data.p_arData.p_ar.template_type)
+                            this.stay_duration = this.data.p_arData.p_ar.stay_duration * 1000
                             if (this.innerAudioContext2) {
                                 this.innerAudioContext2.play()
                                 this.triggerEvent('bgcAudioFlagChange', {
@@ -175,7 +185,7 @@ Component({
                                 })
                             }
                         }
-                        await xrframe.addTemplateTextAnimator(this.data.p_arData.template_type, this.scene, this)
+                        await xrframe.addTemplateTextAnimator(this.data.p_arData.p_ar.template_type, this.scene, this)
                         await this.startAnimatorAndVideo()
                         this.Transform.setData({
                             visible: true
@@ -184,7 +194,7 @@ Component({
                     } else {
                         this.triggerEvent('handleAssetsLoaded', {
                             handleAssetsLoaded: true,
-                            type: this.data.p_arData.template_type
+                            type: this.data.p_arData.p_ar.template_type
                         })
                     }
 
@@ -229,7 +239,7 @@ Component({
             // const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
             const markerShadow = this.markerShadow
             const markerShadow2 = this.markerShadow2
-
+            this.i = 1
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
             console.log(list, 'list', markerShadow)
             if (list.length === 0) return
@@ -327,9 +337,9 @@ Component({
         },
         async StayPageShow(timer) {
             if (this.stay_duration) {
-                timer = this.timer = setTimeout(() => {
+                this.timer = setTimeout(() => {
                     this.triggerEvent('stayPage')
-                    clearTimeout(timer)
+                    clearTimeout(this.timer)
                 }, this.stay_duration);
             }
 
@@ -363,6 +373,7 @@ Component({
             this.Transform = this.markerShadow.getComponent(this.xrFrameSystem.Transform)
 
             if (this.data.workflowType === 1) {
+
                 let {
                     p_ar
                 } = await xrframe.recognizeCigarette(this.scene)
@@ -386,6 +397,7 @@ Component({
                 this.handleTemplate3and4(p_ar.template_type)
                 await this.concatAndLoadAssets(p_ar)
             } else if (this.data.workflowType === 2) {
+
                 const {
                     p_guide,
                     p_scan,
@@ -395,7 +407,7 @@ Component({
                     p_ar
                 } = this.data.p_arData
                 if (p_guide && p_scan && p_ending && Object.keys(p_ar).length > 0) {
-                    let timer2 = setTimeout(async () => {
+                    let timer2 = this.timer2 = setTimeout(async () => {
                         this.handleTemplate3and4(p_ar.template_type)
                         await this.concatAndLoadAssets(p_ar)
                         this.stay_duration = p_ar.stay_duration * 1000
@@ -427,11 +439,11 @@ Component({
 
                 }
             } else if (this.data.workflowType === 3) {
+                console.log(this.data.p_arData, 'cigarette')
                 let obsList = []
                 const {
                     cigarette
-                } = this.data.p_arData
-                console.log(this.data.p_arData, 'cigarette')
+                } = this.data.p_arData.p_ar
                 if (Array.isArray(cigarette)) {
                     console.log('参数是数组');
                     for (const obj of cigarette) {
@@ -469,7 +481,7 @@ Component({
                 this.setData({
                     obsList,
                 })
-                await this.concatAndLoadAssets(this.data.p_arData)
+                await this.concatAndLoadAssets(this.data.p_arData.p_ar)
                 // this.handleTemplate3and4(p_ar.template_type)
                 // await this.concatAndLoadAssets(p_ar)
             }

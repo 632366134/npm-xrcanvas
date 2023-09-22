@@ -19,7 +19,6 @@ import {
 const FSM = wx.getFileSystemManager();
 
 const XRFrameSystem = wx.getXrFrameSystem();
-let i = 1
 export const getCameraAuthorize = () => {
     return new Promise((resolve) => {
         wx.authorize({
@@ -169,7 +168,7 @@ export const recognizeCigarette = (scene, that = null) => {
                 result
             } = recognizedResult
             if (that && that.data.workflowType === 3) {
-                if (result.sku === that.data.p_arData.cigarette.sku) {
+                if (result.sku === that.data.p_arData.p_ar.cigarette.sku) {
                     wx.showToast({
                         title: '规格匹配成功',
                         duration: 1000,
@@ -422,7 +421,7 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => 
             }
             transform.position.setValue(threeD.position.x, threeD.position.y, threeD.position.z);
             that.triggerEvent('handleAssetsProgress', {
-                index: i++,
+                index: that.i++,
                 length: that.list.length
             })
             resolve();
