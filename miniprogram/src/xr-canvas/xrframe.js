@@ -69,7 +69,7 @@ export const initXRFrame = (that, width, height) => {
         windowHeight: windowHeight,
         pixelRatio: dpi,
     } = wx.getSystemInfoSync();
-    console.log(that.data)
+    console.log(that.data,'this.data')
 
     that.setData({
         "width": width || windowWidth,
@@ -476,7 +476,9 @@ export const startAnimatorAndVideo = async (that) => {
         }
         for (let video of that.videoList) {
             video.stop();
+            setTimeout(async() => {
             await video.play();
+            }, 50);
         }
     } catch (err) {
         console.error('XR-FRAME: 场景动画开始错误: ', err);

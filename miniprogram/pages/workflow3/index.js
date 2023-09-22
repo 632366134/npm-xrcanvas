@@ -4,8 +4,8 @@ import {
 } from '../../src/xr-canvas/utils'
 Page({
     data: {
-        workflowType: 1,
-        p_arData: [],
+        workflowType:3,
+        p_arData: {},
         workflowData: {
             "p_guide_uid": "",
             "p_guide": {
@@ -100,11 +100,11 @@ Page({
                 }
             ]
         },
-        width: 400,
-        height: 400,
+        width:400,
+        height:400,
         flag: false,
-        XRHeight: 400,
-        XRHeight: 400
+        XRHeight:400,
+        XRHeight:400
     },
     async onLoad() {
         const {
@@ -112,7 +112,7 @@ Page({
         } = await getArList("10,1")
         console.log(result, 'd')
         this.setData({
-            p_arData: result.items,
+            flag: true
         })
     },
     onUnload() {
@@ -126,19 +126,6 @@ Page({
         if (!detail.handleAssetsLoaded) return
         const node = this.node = this.selectComponent('#npm-xrframe').selectComponent('#xr-canvas')
         await this.node.stopAnimatorAndVideo2()
-    },
-    goBox1() {
-        wx.navigateTo({
-            url: "/pages/workflow1/index",
-        })
-    },
-    goBox2({
-        currentTarget
-    }) {
-        let data = JSON.stringify(currentTarget.dataset.item)
-        wx.navigateTo({
-            url: `/pages/workflow2/index?p_arData=${data}`,
-        })
     },
 
 })

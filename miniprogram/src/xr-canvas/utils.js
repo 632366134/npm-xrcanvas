@@ -56,10 +56,10 @@ export const workflow = (data) => {
         });
     });
 }
-export const getArList  = (data) => {
+export const getArList = (data) => {
     return new Promise((resolve, reject) => {
         wx.request({
-            url: url + '/api/m/ar/home/sku_ar/items?pl='+data,
+            url: url + '/api/m/ar/home/sku_ar/items?pl=' + data,
             method: 'GET',
             header: {
                 'content-type': 'application/json',
@@ -74,10 +74,45 @@ export const getArList  = (data) => {
         });
     });
 }
-export const getmyworkList  = (data) => {
+export const getmyworkList = (data) => {
     return new Promise((resolve, reject) => {
         wx.request({
             url: url + `/api/m/ar/ugc/works${data}`,
+            method: 'GET',
+            header: {
+                'Authorization': Authorization
+            },
+            success(res) {
+                resolve(res.data);
+            },
+            fail(err) {
+                reject(err);
+            }
+        });
+    });
+}
+export const getskuTemplates = (data) => {
+    return new Promise((resolve, reject) => {
+        wx.request({
+            url: url + `/api/m/ar/ugc/sku_templates${data}`,
+            method: 'GET',
+            header: {
+                'Authorization': Authorization
+            },
+            success(res) {
+                resolve(res.data);
+            },
+            fail(err) {
+                reject(err);
+            }
+        });
+    });
+}
+
+export const getskuTemplatesList = (data) => {
+    return new Promise((resolve, reject) => {
+        wx.request({
+            url: url + `/api/m/ar/ugc/skus${data}`,
             method: 'GET',
             header: {
                 'Authorization': Authorization

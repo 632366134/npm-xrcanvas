@@ -185,7 +185,7 @@ Component({
             //     workflowData: result,
             //      : result.p_ar
             // })
-            console.log(result, 'result')
+            // console.log(result, 'result'
             const {
                 p_guide
             } = this.data.workflowData

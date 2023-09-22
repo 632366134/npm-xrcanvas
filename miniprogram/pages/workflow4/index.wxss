@@ -1,0 +1,44 @@
+/* pages/workflow4/workflow4.wxss */
+.templatesList {
+    width: 100vw;
+}
+
+.arListBox {
+    width: 100vw;
+    display: flex;
+    flex-wrap: wrap;
+
+}
+
+.arList {
+    width: 33.3%;
+    align-items: center;
+    justify-items: center;
+    flex-direction: column;
+    display: flex;
+    flex-wrap: wrap;
+
+}
+
+.arList image {
+    width: 100%;
+}
+
+.changeBox {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.template {
+    margin-top:120rpx;
+    display: flex;
+    flex-direction: column;
+}
+.templateInput {
+    margin: 30 0rpx;
+    display: flex;
+}
+input {
+    height: 50rpx;
+}

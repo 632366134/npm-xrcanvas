@@ -1,7 +1,30 @@
 {
     "pages": [
-        "pages/index/index"
+        "pages/index/index",
+        "pages/userMain/index",
+        "pages/workflow1/index",
+        "pages/workflow2/index",
+        "pages/workflow3/index",
+        "pages/workflow4/index",
+        "pages/userCreate/index"
     ],
+    "tabBar": {
+        "custom": false,
+        "color": "#7A7E83",
+        "selectedColor": "#3cc51f",
+        "borderStyle": "black",
+        "backgroundColor": "#ffffff",
+        "list": [
+            {
+                "pagePath": "pages/index/index",
+                "text": "首页"
+            },
+            {
+                "pagePath": "pages/userMain/index",
+                "text": "用户自创"
+            }
+        ]
+    },
     "window": {
         "backgroundTextStyle": "light",
         "navigationBarBackgroundColor": "#fff",
@@ -11,20 +34,13 @@
     },
     "subpackages": [
         {
-          "root": "packageA",
-          "pages": [
-            "pages/cat"
-          ]
-        }],
-    "style": "v2",
-    "rendererOptions": {
-        "skyline": {
-            "defaultDisplayBlock": true,
-            "disableABTest": true,
-            "sdkVersionBegin": "3.0.0",
-            "sdkVersionEnd": "15.255.255"
+            "root": "packageA",
+            "pages": [
+                "pages/cat"
+            ]
         }
-    },
+    ],
+    "style": "v2",
     "componentFramework": "glass-easel",
     "sitemapLocation": "sitemap.json",
     "lazyCodeLoading": "requiredComponents"

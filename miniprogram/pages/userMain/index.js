@@ -1,6 +1,6 @@
 import {
     workflow,
-    getArList
+    getmyworkList
 } from '../../src/xr-canvas/utils'
 Page({
     data: {
@@ -107,12 +107,12 @@ Page({
         XRHeight: 400
     },
     async onLoad() {
-        const {
+        let {
             result
-        } = await getArList("10,1")
+        } = await getmyworkList(`?pl=10,0`)
         console.log(result, 'd')
         this.setData({
-            p_arData: result.items,
+            p_arData: result.works,
         })
     },
     onUnload() {
@@ -129,15 +129,15 @@ Page({
     },
     goBox1() {
         wx.navigateTo({
-            url: "/pages/workflow1/index",
+            url: "/pages/workflow4/index",
         })
     },
-    goBox2({
+    goBox2({ 
         currentTarget
     }) {
         let data = JSON.stringify(currentTarget.dataset.item)
         wx.navigateTo({
-            url: `/pages/workflow2/index?p_arData=${data}`,
+            url: `/pages/workflow3/index?p_arData=${data}`,
         })
     },
 

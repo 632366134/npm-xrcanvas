@@ -1,0 +1,38 @@
+<view>
+    <view wx:if="{{box1Flag}}" class="templatesList" wx:for="{{list}}" wx:key="uid">
+        <view class="templatesItem">
+            <image bind:tap="showArBox" data-data="{{item}}" src="{{item.front_image_url}}" mode="" />
+            <text></text>
+        </view>
+    </view>
+    <view class="arListBox" wx:if="{{box2Flag}}">
+        <view class="arList" wx:for="{{arList}}" wx:key="sku">
+            <image bind:tap="showArBox2" data-data="{{item}}" src="{{item.p_ar.display_image_url}}" mode="aspectFit" />
+            <text>{{item.p_ar.template_type}}</text>
+        </view>
+    </view>
+    <view class="changeBox" wx:if="{{box3Flag}}">
+        <npm-xrframe wx:if="{{flag}}" class="npm-xrframe" id="npm-xrframe" workflowData="{{workflowData}}" workflowType="{{workflowType}}" p_arData="{{p_arData}}" textListRaw="{{textListRaw}}" screenListRaw="{{screenListRaw}}" XRWidth="{{XRWidth}}" XRHeight="{{XRHeight}}"></npm-xrframe>
+        <view class="template" wx:if="{{p_arData.p_ar.template_type ==='模版一'}}">
+            <view class="templateInput">文案一<input bindblur="bindblur" data-index="1" value="{{value1}}" type="text" /></view>
+            <view class="templateInput">文案二<input bindblur="bindblur" data-index="2" value="{{value2}}" type="text" /></view>
+            <view class="templateInput">文案三<input bindblur="bindblur" data-index="3" value="{{value3}}" type="text" /></view>
+            <view class="templateInput">文案四<input bindblur="bindblur" data-index="4" value="{{value4}}" type="text" /></view>
+            <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
+        </view>
+        <view class="template" wx:if="{{p_arData.p_ar.template_type ==='模版三'}}">
+            <view class="templateInput">文案一<input bindblur="bindblur" data-index="1" value="{{value1}}" type="text" /></view>
+            <view class="templateInput">文案二<input bindblur="bindblur" data-index="2" value="{{value2}}" type="text" /></view>
+            <view class="templateInput">文案三<input bindblur="bindblur" data-index="3" value="{{value3}}" type="text" /></view>
+
+            <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
+        </view>
+        <view class="template" wx:if="{{p_arData.p_ar.template_type ==='模版四'}}">
+            <view class="templateInput">文案一<input bindblur="bindblur" data-index="1" value="{{value1}}" type="text" /></view>
+            <view class="templateInput">文案二<input bindblur="bindblur" data-index="2" value="{{value2}}" type="text" /></view>
+            <view class="templateInput">文案三<input bindblur="bindblur" data-index="3" value="{{value3}}" type="text" /></view>
+
+            <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
+        </view>
+    </view>
+</view>

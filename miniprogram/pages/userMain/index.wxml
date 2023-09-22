@@ -1,5 +1,5 @@
 <view class="container">
-    <view bind:tap="goBox1" class="box1"> 随手拍</view>
+    <view bind:tap="goBox1" class="box1"> 开始自创</view>
     <scroll-view 	scroll-y class="scroll-y">
     <view  class="box2_main">
         <view  bind:tap="goBox2" class="box2" wx:for="{{p_arData}}" wx:key="p_ar_uid" data-item="{{item}}">
