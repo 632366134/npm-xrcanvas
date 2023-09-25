@@ -52,6 +52,7 @@ Component({
         p_ar: {},
         obsList: [],
         position: [],
+        rotation: [],
         Assetsloaded: false
     },
     lifetimes: {
@@ -60,51 +61,52 @@ Component({
             this.animatorList = []
             this.videoList = []
             let position = [0, 0, 0]
+            let rotation = [0, 0, 0]
             if (this.data.workflowType === 1) {
                 this.setData({
                     arReadyFlag: true,
                     modes: "Marker",
                     trackerFlag2: true,
-                    position
+                    position,
+                    rotation
                 })
             } else if (this.data.workflowType === 3) {
                 this.setData({
                     arReadyFlag: true,
                     modes: "Marker",
                     trackerFlag2: true,
-                    position
+                    position,
+                    rotation
                 })
             } else {
                 if (this.data.p_arData.p_ar?.template_type === "模版四") {
-                    position = [0, 0, 4]
+                    position = [0, 3, 4]
 
                 } else {
-                    position = [0, 2, 4]
+                    position = [0, 4, 0]
+                    rotation = [0, 180, 0]
                 }
                 this.setData({
                     arReadyFlag: true,
                     modes: "threeDof",
                     trackerFlag2: false,
                     position,
+                    rotation
 
                 })
             }
         },
-      async  detached() {
-           await  this.stopAnimatorAndVideo()
-            if (this.list?.length >= 0) {
-                xrframe.releaseAssetList(this, this.list)
-                this.list = []
-            }
+        async detached() {
+            await this.stopAnimatorAndVideo()
             this.triggerEvent('bgc_AudioFlagChange', {
                 bgc_AudioFlag: false
             })
             this.innerAudioContext2?.stop()
             this.innerAudioContext2?.destroy()
             this.innerAudioContext2 = null
-            if (this.x) {
-                this.x = null
-                wx.offGyroscopeChange(this.x)
+            if (this.s) {
+                this.s = null
+                wx.offGyroscopeChange(this.s)
                 wx.stopGyroscope()
             }
             if (this.timer2) {
@@ -115,39 +117,6 @@ Component({
             }
             if (this.scene) {
                 this.scene = null
-            }
-            if (this.anchor) {
-                this.anchor = null
-            }
-            if (this.trs) {
-                this.trs = null
-            }
-            if (this.GLTF) {
-                this.GLTF = null
-            }
-            if (this.xrgltf) {
-                this.xrgltf = null
-            }
-            if (this.tmpV3) {
-                this.tmpV3 = null
-            }
-            if (this.gltfModel) {
-                this.gltfModel = null
-            }
-            if (this.gltfModel) {
-                this.gltfModel = null
-            }
-            if (this.gltfModel) {
-                this.gltfModel = null
-            }
-            if (this.gltfItemSubTRS) {
-                this.gltfItemSubTRS = null
-            }
-            if (this.videoTRS) {
-                this.videoTRS = null
-            }
-            if (this.gltfItemTRS) {
-                this.gltfItemTRS = null
             }
         },
     },
@@ -241,7 +210,6 @@ Component({
             const markerShadow2 = this.markerShadow2
             this.i = 1
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
-            console.log(list, 'list', markerShadow)
             if (list.length === 0) return
             const promiseList = []
             for (const obj of list) {
@@ -494,7 +462,7 @@ Component({
             let s = this.s = ({
                 y
             }) => {
-                this.Transform.position.x -= y * 0.1
+                this.Transform.position.x -= y * 0.2
             }
             await wx.startGyroscope({
                 interval: 'ui',

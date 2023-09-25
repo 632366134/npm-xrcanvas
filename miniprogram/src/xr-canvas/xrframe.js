@@ -68,7 +68,7 @@ export const initXRFrame = (that, width, height) => {
         windowHeight: windowHeight,
         pixelRatio: dpi,
     } = wx.getSystemInfoSync();
-    console.log(that.data,'this.data')
+    console.log(that.data, 'this.data')
 
     that.setData({
         "width": width || windowWidth,
@@ -298,6 +298,7 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
         });
         if (!markerShadow || !node) return;
         await addObjectToShadow(markerShadow, node, modelData['3d_info'], false, that);
+
         return;
     } catch (err) {
         console.error('XR-FRAME GLTF模型加载错误: ', err);
@@ -313,11 +314,12 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
             autoPlay: false,
             loop: true,
             abortAudio: false,
+            assetId: videoData.uid,
         });
         if (!scene) return;
         let material = await scene.createMaterial(
             // await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
-            await scene.assets.getAsset('effect','standard'), {
+            await scene.assets.getAsset('effect', 'standard'), {
                 u_baseColorMap: video.texture,
             }
         );
@@ -327,7 +329,7 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
-            uid: videoData.uid,
+            // uid: videoData.uid,
         });
         if (!videoList) return;
         that.videoList.push(video);
@@ -362,13 +364,13 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
-            uid: imageData.uid,
-            id:imageData.file_uid
+            // uid: imageData.uid,
+            // id:imageData.file_uid
 
         });
         node.setId(imageData.file_uid)
         node.setAttribute('states', 'cullOn: false');
-        if(that.data.workflowType===4&&that.nodeList){
+        if (that.data.workflowType === 4 && that.nodeList) {
             that.nodeList.push(node)
         }
         if (imageData.event) {
@@ -384,12 +386,22 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         }
         if (!markerShadow || !node) return;
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
+
         if (!textList) return
         if (imageData.location === "right") return
-        that.textList.push({
-            node: node,
-            '3d_info': imageData['3d_info'],
-        });
+        if(!isNaN(imageData.location)){
+            
+            that.textList.splice(imageData.location,0,{
+                node: node,
+                '3d_info': imageData['3d_info'],
+            })
+        }else {
+            that.textList.push({
+                node: node,
+                '3d_info': imageData['3d_info'],
+            });
+        }
+      
         return;
     } catch (err) {
         console.error('XR-FRAME: 图片素材加载错误: ', err);
@@ -475,8 +487,8 @@ export const startAnimatorAndVideo = async (that) => {
         }
         for (let video of that.videoList) {
             video.stop();
-            setTimeout(async() => {
-            await video.play();
+            setTimeout(async () => {
+                await video.play();
             }, 50);
         }
     } catch (err) {
@@ -623,31 +635,24 @@ export function throttle(fn, wait, that) {
         }
     }
 }
-export const releaseAssetList = (that, list) => {
+export const releaseAssetList = (scene, list) => {
+    console.log(scene)
     if (list?.length !== 0) {
         try {
-
-
             for (const obj of list) {
+                if (!!!obj) continue
                 if (obj.type === 'text') {
-                    that.scene.assets.releaseAsset('texture', obj.uid);
-
+                    scene.assets.releaseAsset('texture', obj.uid);
                 } else if (obj.type === "model") {
-                    that.scene.assets.releaseAsset('gltf', obj.uid);
-
+                    scene.assets.releaseAsset('gltf', obj.uid);
                 } else if (obj.type === 'video') {
-                    that.scene.assets.releaseAsset('video-texture', obj.uid);
-
-
+                    scene.assets.releaseAsset('video-texture', obj.uid);
                 } else if (obj.type === 'screen') {
-                    that.scene.assets.releaseAsset('texture', obj.uid);
-
+                    scene.assets.releaseAsset('texture', obj.uid);
                 } else if (obj.type === 'image') {
-                    that.scene.assets.releaseAsset('texture', obj.uid);
-                }
-
+                    scene.assets.releaseAsset('texture', obj.uid);
+                } else {}
             }
-            list = null
         } catch (error) {
             console.log('releaseAsset失败', error)
         }

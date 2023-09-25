@@ -75,6 +75,11 @@ Component({
                 duration: 10,
                 progressColor: "#87CEEB"
             },
+            '模版二': {
+                imageUrl: '/assets/type4.png',
+                duration: 30,
+                progressColor: "#808080"
+            },
             '模版三': {
                 imageUrl: '/assets/type3.png',
                 duration: 10,

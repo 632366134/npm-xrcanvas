@@ -7,12 +7,13 @@
         </xr-ar-tracker>
 
     </xr-node>
-    <xr-node id="markerShadow" visible="{{false}}" node-id="markerShadow" position="0 0 0">
-        <xr-node id="markerShadow2"  node-id="markerShadow2" position="0 0 0">
-    
-</xr-node>
+    <xr-node rotation="{{rotation[0]}} {{rotation[1]}} {{rotation[2]}}" id="markerShadow" visible="{{false}}" node-id="markerShadow" position="0 0 0" >
+        <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0">
+        </xr-node>
     </xr-node>
-    <xr-camera id="camera" node-id="camera" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera="{{trackerFlag2}}" target="{{trackerFlag2?'':'markerShadow'}}" position="{{position[0]}} {{position[1]}} {{position[2]}}">
+    <xr-node  id="markerShadow3"  node-id="markerShadow3" position="0 0 0">
+    </xr-node>
+    <xr-camera isLockRotate="true" id="camera" node-id="camera" clear-color="0.925 0.925 0.925 1" background="ar" near="0.1" far="2000" is-ar-camera="{{trackerFlag2}}" target="{{trackerFlag2?'':'markerShadow3'}}" position="{{position[0]}} {{position[1]}} {{position[2]}}"  >
     </xr-camera>
     <xr-node node-id="lights">
         <xr-light type="ambient" color="1 1 1" intensity="0.1" />
