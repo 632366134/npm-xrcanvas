@@ -134,9 +134,12 @@ Component({
             if (active) {
                 this.active = true
                 if (this.data.workflowType === 3) {
-                    let {
-                        p_ar
-                    } = await xrframe.recognizeCigarette(this.scene, this)
+                    if(!this.loading) {
+                        let {
+                            p_ar
+                        } = await xrframe.recognizeCigarette(this.scene, this)
+                    }
+                   
                     if (this.data.Assetsloaded) {
 
 
@@ -167,7 +170,7 @@ Component({
                         })
                     }
 
-
+                    this.loading = true
                 } else {
                     this.Transform.setData({
                         visible: true
@@ -226,6 +229,10 @@ Component({
 
                 } else if (obj.type === 'screen' && result.template_type === "模版四" && this.data.workflowType === 2) {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow2, true, this)
+
+                    promiseList.push(p)
+                } else if (obj.type === 'screen' && result.template_type === "模版四" && this.data.workflowType === 3) {
+                    const p = xrframe.loadImageObject(this.scene, obj, markerShadow2, true, this)
                     promiseList.push(p)
                 } else if (obj.type === 'screen') {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
@@ -237,6 +244,8 @@ Component({
             }
             await Promise.all(promiseList).then(async results => {
                 console.log(results, 'resultsresultsresultsresults')
+
+                // this.markerShadow2.getComponent('auto-rotate').setData({speed: [2, 1, 3]});
                 this.data.Assetsloaded = true
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: false,
@@ -483,6 +492,9 @@ Component({
                 this.innerAudioContext2.loop = true
                 // await xrframe.audioFadeOut(this.innerAudioContext2)
             }
+        },
+        removeFromScene(uid){
+            xrframe.removeFromScene(this.markerShadow,this.markerShadow2,uid)
         }
 
 

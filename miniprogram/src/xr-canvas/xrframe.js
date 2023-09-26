@@ -2,13 +2,15 @@ import {
     homeRecognize,
     homeRecognizeYUV
 } from '/utils';
+import '../components/AutoRotate'
+
 import * as YUVUtils from './yuv';
 import {
     generateTemplate1KeyFrame
 } from './template1';
-// import {
-//   generateTemplate2KeyFrame
-// } from "../xr-custom/keyframes/template2";
+import {
+    generateTemplate2KeyFrame
+} from "./template2";
 import {
     generateTemplate3KeyFrame
 } from './template3';
@@ -169,11 +171,11 @@ export const recognizeCigarette = (scene, that = null) => {
             } = recognizedResult
             if (that && that.data.workflowType === 3) {
                 if (result.sku === that.data.p_arData.p_ar.cigarette.sku) {
-                    wx.showToast({
-                        title: '规格匹配成功',
-                        duration: 1000,
-                        icon: 'none'
-                    })
+                    // wx.showToast({
+                    //     title: '规格匹配成功',
+                    //     duration: 1000,
+                    //     icon: 'none'
+                    // })
                     return resolve(recognizedResult.result);
                 } else {
                     wx.showToast({
@@ -315,6 +317,7 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
             loop: true,
             abortAudio: false,
             assetId: videoData.uid,
+
         });
         if (!scene) return;
         let material = await scene.createMaterial(
@@ -378,6 +381,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             node.event.add('touch-shape', async () => {
                 if (that.data.workflowType === 3 && !that.firstFlag) return
                 that.triggerEvent('showInteractMedia', imageData.event);
+                if (that.data.workflowType === 4) return
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 播放
                 await that.StayPageShow()
@@ -388,26 +392,93 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
 
         if (!textList) return
-        if (imageData.location === "right") return
-        if(!isNaN(imageData.location)){
-            
-            that.textList.splice(imageData.location,0,{
+        if (!imageData.hasOwnProperty("text")) return
+        if (!isNaN(imageData.location)) {
+
+            that.textList.splice(imageData.location, 0, {
                 node: node,
                 '3d_info': imageData['3d_info'],
             })
-        }else {
+        } else {
             that.textList.push({
                 node: node,
                 '3d_info': imageData['3d_info'],
             });
         }
-      
+
         return;
     } catch (err) {
         console.error('XR-FRAME: 图片素材加载错误: ', err);
     }
 }
+export const replaceMaterial = async (scene, imageData, markerShadow, textList, that) => {
+    try {
+        await scene.assets.releaseAsset('texture', imageData.file_uid);
+        if (!imageData.file_url) throw '无资源URL';
+        let image = await scene.assets.loadAsset({
+            type: 'texture',
+            assetId: imageData.file_uid,
+            src: imageData.file_url,
+        });
+        if (!scene) return;
+        let material = await scene.createMaterial(
+            scene.assets.getAsset('effect', 'standard'), {
+                u_baseColorMap: image.value,
+            }
+        );
+        material.renderQueue = 2500;
+        material.alphaMode = "BLEND";
+        if (!scene) return;
+        const node = scene.getElementById(imageData.file_uid);
+        console.log(node)
+        if (!node) return;
+        node.getComponent(XRFrameSystem.Mesh).setData({
+            material: material,
+            geometry: scene.assets.getAsset('geometry', 'plane'),
+            // uid: imageData.uid,
+            // id:imageData.file_uid
 
+        });
+        // node.setId(imageData.file_uid)
+        node.setAttribute('states', 'cullOn: false');
+        if (that.data.workflowType === 4 && that.nodeList) {
+            that.nodeList.push(node)
+        }
+        if (imageData.event) {
+            node.setAttribute('cube-shape', 'true');
+            node.event.add('touch-shape', async () => {
+                if (that.data.workflowType === 3 && !that.firstFlag) return
+                that.triggerEvent('showInteractMedia', imageData.event);
+                if (that.data.workflowType === 4) return
+                clearTimeout(that.timer)
+                that.innerAudioContext2?.pause() // 播放
+                // await that.StayPageShow()
+
+            });
+        }
+        if (!markerShadow || !node) return;
+        await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
+
+        if (!textList) return
+        if (!imageData.hasOwnProperty("text")) return
+        if (!isNaN(imageData.location)) {
+
+            that.textList.splice(imageData.location, 0, {
+                node: node,
+                '3d_info': imageData['3d_info'],
+            })
+        } else {
+            that.textList.push({
+                node: node,
+                '3d_info': imageData['3d_info'],
+            });
+        }
+
+        return;
+    } catch (err) {
+        console.error('XR-FRAME: 图片素材替换错误: ', err);
+    }
+}
 export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => {
     return new Promise((resolve, reject) => {
         try {
@@ -537,11 +608,14 @@ export const handleShadowRotate = (that) => {
                 shadowRotateY(xMove, that.markerShadow2);
 
             } else if (that.data.workflowType === 4) {
+
                 shadowPositionY(yMove, that.markerShadow);
                 shadowPositionX(xMove, that.markerShadow);
 
+            } else if (that.data.workflowType === 3 && that.data.p_arData.p_ar.template_type === "模版四") {
+                shadowRotateY(xMove, that.markerShadow2);
+
             } else {
-                shadowRotateY(xMove, that.markerShadow);
 
             }
         }
@@ -567,7 +641,10 @@ export const shadowPositionX = (deltaX, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     transform.position.x += deltaX / 100;
 }
-
+export const resetPosition = (markerShadow) => {
+    const transform = markerShadow.getComponent(XRFrameSystem.Transform);
+    transform.position.setValue(0, 0, 0)
+}
 export const handleTemplate4KeyFrame = (that) => {
     let animator = that.markerShadow.addComponent(XRFrameSystem.Animator);
     animator.addAnimation(new XRFrameSystem.KeyframeAnimation(
@@ -657,6 +734,12 @@ export const releaseAssetList = (scene, list) => {
             console.log('releaseAsset失败', error)
         }
     }
+}
+export const removeFromScene = (n1, n2, uid) => {
+    n1.removeChild(this.getElementById(uid))
+    n2.removeChild(this.getElementById(uid))
+
+
 }
 export const backgroundAudioList = {
     '模版三': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/2.mp3',

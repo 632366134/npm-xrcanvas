@@ -2,16 +2,17 @@ import {
     getArList,
     getskuTemplatesList
 } from '../../src/xr-canvas/utils'
+import * as xrframe from '../../src/xr-canvas/xrframe'
 Page({
     data: {
         workflowType: 4,
         p_arData: {},
         workflowData: {},
-        width: 200,
-        height: 200,
+        width: 300,
+        height: 300,
         flag: false,
-        XRHeight: 200,
-        XRWidth: 200,
+        XRHeight: 300,
+        XRWidth: 300,
         list: [],
         box1Flag: true,
         box2Flag: false,
@@ -20,7 +21,9 @@ Page({
         value1: '',
         value2: '',
         value3: '',
-        value4: ''
+        value4: '',
+        textListRaw: {},
+        screenListRaw: {}
     },
     async onLoad() {
         const {
@@ -31,6 +34,7 @@ Page({
             flag: true,
             list: result.skus
         })
+
     },
     onUnload() {
 
@@ -42,6 +46,7 @@ Page({
         console.log(detail, 'loadingchange')
         if (!detail.handleAssetsLoaded) return
         const node = this.node = this.selectComponent('#npm-xrframe').selectComponent('#xr-canvas')
+
         await this.node.stopAnimatorAndVideo2()
     },
     async showArBox({
@@ -130,21 +135,26 @@ Page({
             wx.canvasToTempFilePath({
                 canvasId: 'textCanvas',
                 success: (res) => {
+
                     console.log(res.tempFilePath); // 在这里可以获取到生成的 PNG 图片路径
                     if (p_arData.p_ar.template_type === '模版一' || p_arData.p_ar.template_type === '模版三') {
-                        let textListRaw = p_arData.p_ar.text_list
-                        textListRaw[index - 1].text = text
-                        textListRaw[index - 1].file_url = res.tempFilePath
+                        // let textListRaw = p_arData.p_ar.text_list
+                        // textListRaw[index - 1].text = text
+                        // textListRaw[index - 1].file_url = res.tempFilePath
+                        // this.setData({
+                        //     textListRaw: textListRaw[index - 1]
+                        // })
+                        this.result[index - 1].file_url = res.tempFilePath
+                        this.node2.replaceMaterial(this.result[index - 1])
+                    } else {
+                        let screenListRaw = p_arData.p_ar.screen_list
+                        // screenListRaw[index - 1].text = text
+                        screenListRaw[index - 1].file_url = res.tempFilePath
                         this.setData({
-                            textListRaw
+                            screenListRaw: screenListRaw[index - 1]
                         })
-                    }else{
-                        let textListRaw = p_arData.p_ar.text_list
-                        textListRaw[index - 1].text = text
-                        textListRaw[index - 1].file_url = res.tempFilePath
-                        this.setData({
-                            textListRaw
-                        })
+                        this.node2.replaceMaterial(this.data.screenListRaw)
+
                     }
                 },
                 fail: (err) => {
@@ -152,6 +162,26 @@ Page({
                 },
             });
         });
-    }
+    },
+    async handleReadyFun() {
+        const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
+        console.log('handleReadyFunhandleReadyFunhandleReadyFun')
+        const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
+        await node2.setDefaultObjectsData(result)
 
+    },
+    removeFromScene(uid) {
+        this.node2.removeFromScene(uid)
+    },
+    async addToScene(data) {
+        await this.node2.setDefaultObjectsData([data])
+
+    },
+    async captureCreatingScene() {
+       const url = await this.node2.saveSceneAsImage()
+       this.setData({url})
+    },
+    resetPosition(){
+        this.node2.resetPosition()
+    }
 })

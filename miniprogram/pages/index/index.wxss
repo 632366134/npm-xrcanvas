@@ -6,17 +6,20 @@
     align-items: center;
     justify-content: center;
 }
-.scroll-y{
+
+.scroll-y {
     width: 100vw;
     height: 80%;
 }
-.box2_main{
+
+.box2_main {
     width: 100vw;
     height: auto;
     display: flex;
     flex-wrap: wrap;
-    overflow:hidden;
+    overflow: hidden;
 }
+
 .box2 {
     text-align: center;
     width: 50%;
@@ -24,6 +27,8 @@
     border: solid 2rpx #ccc;
     box-sizing: border-box;
 }
+
 .box2 .image {
     width: 80%;
 }
+

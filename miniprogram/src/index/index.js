@@ -24,12 +24,12 @@ Component({
             default: {}
         },
         screenListRaw: {
-            type: Array,
-            default: []
+            type: Object,
+            default: {}
         },
         textListRaw: {
-            type: Array,
-            default: []
+            type: Object,
+            default: {}
         },
        XRHeight: {
             type: Number,
@@ -73,22 +73,22 @@ Component({
             '模版一': {
                 imageUrl: '/assets/type1.png',
                 duration: 10,
-                progressColor: "#87CEEB"
+                progressColor: "#2DAAD5"
             },
             '模版二': {
-                imageUrl: '/assets/type4.png',
+                imageUrl: '/assets/type2.png',
                 duration: 30,
-                progressColor: "#808080"
+                progressColor: "#75AD66"
             },
             '模版三': {
                 imageUrl: '/assets/type3.png',
                 duration: 10,
-                progressColor: "#00FF00",
+                progressColor: "#32B690",
             },
             '模版四': {
                 imageUrl: '/assets/type4.png',
                 duration: 30,
-                progressColor: "#808080"
+                progressColor: "#BC9F81"
             },
         },
         percent: 0,
