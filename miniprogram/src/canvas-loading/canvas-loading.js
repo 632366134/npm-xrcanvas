@@ -88,7 +88,8 @@ Component({
      */
     data: {
         readyFlag: true,
-        Assetsloaded: false
+        Assetsloaded: false,
+        targetFlag: false
     },
     lifetimes: {
 
@@ -127,6 +128,17 @@ Component({
                 title: '加载中',
                 mask: true
             })
+            let {
+                template_type
+            } = this.data.p_arData.p_ar
+            if (template_type === "模版四") {
+                this.markerShadow.getComponent(this.XR.Transform).rotation.x = 30 * (Math.PI / 180)
+                console.log(this.camera, 'c')
+                this.camera.getComponent(this.XR.Camera).setData({
+                    target: this.markerShadow.getComponent(this.XR.Transform)
+                })
+                this.camera.addComponent(this.XR.CameraOrbitControl, {});
+            }
             // const {
             //     p_ar
             // } = data
@@ -147,7 +159,7 @@ Component({
                 } else if (obj.type === 'video') {
                     const p = xrframe.loadVideoObject(this.scene, obj, true, this.markerShadow, this)
 
-                } else if (obj.type === 'screen' && this.data.p_arData.p_ar.template_type === "模版四") {
+                } else if (obj.type === 'screen' && template_type === "模版四") {
                     const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow2, true, this)
                     promiseList.push(p)
                 } else if (obj.type === 'screen') {
@@ -169,7 +181,9 @@ Component({
                 // if (this.data.screenListRaw !== []) {
                 //     await this.typeOneLoading(this.data.screenListRaw)
                 // }
-                await xrframe.handleShadowRotate(this)
+                if (template_type !== "模版四") {
+                    await xrframe.handleShadowRotate(this)
+                }
                 await xrframe.startAnimatorAndVideo(this)
                 wx.hideLoading()
 
@@ -203,6 +217,8 @@ Component({
             const xrScene = this.scene = detail.value;
             const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
             const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
+            const camera = this.camera = this.scene.getElementById('camera')
+
             this.nodeList = []
 
             this.XR = wx.getXrFrameSystem();
@@ -213,14 +229,21 @@ Component({
             })
         },
         removeFromScene(uid) {
-            xrframe.removeFromScene(this.markerShadow, this.markerShadow2, uid)
+            console.log(this.scene.getElementById(uid), 'this.scene.getElementById(uid)')
+            xrframe.removeFromScene(this.markerShadow, this.markerShadow2, this.scene.getElementById(uid))
         },
         async saveSceneAsImage() {
             return await xrframe.saveSceneAsImage(this.scene)
         },
-        resetPosition() {
-            xrframe.resetPosition(this.markerShadow)
+        resetPosition(type) {
+            if (type === "模版四") {
+                xrframe.resetPosition(this.camera, type)
+
+            } else {
+                xrframe.resetPosition(this.markerShadow, type)
+
+            }
         }
     },
-   
+
 })

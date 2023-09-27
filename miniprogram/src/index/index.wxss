@@ -30,7 +30,9 @@
     align-items: center;
     justify-content: center;
 }
-
+.p_ending {
+    flex-direction: column;
+}
 .p_loading {
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
@@ -69,16 +71,16 @@
 }
 
 .p_EVENT_image {
-    width: 100%;
-    height: 100%;
-    padding: 8%;
+    width: 84%;
+    height:84%;
+    padding: 6%;
     box-sizing: border-box;
 }
 
 .p_EVENT_video {
     box-sizing: border-box;
-    width: 80%;
-    height: 200px;
+    width: 85%;
+    height: 320rpx;
 }
 
 .p_EVENT_video_border {
@@ -87,7 +89,8 @@
     justify-content: center;
     z-index: 9999999;
     box-sizing: border-box;
-    padding: 5% 0;
+    padding: 2% 0;
+    height: 380rpx;
     width: 95%;
     box-sizing: border-box;
     background-position: center;

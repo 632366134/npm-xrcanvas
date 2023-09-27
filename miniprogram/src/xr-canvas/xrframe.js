@@ -14,12 +14,15 @@ import {
 import {
     generateTemplate3KeyFrame
 } from './template3';
+// import {
+//     generateTemplate3KeyFrame
+// } from './remove-black';
 import {
     generateGrowKeyFrame
 } from './grow';
 
 const FSM = wx.getFileSystemManager();
-
+let i = 0
 const XRFrameSystem = wx.getXrFrameSystem();
 export const getCameraAuthorize = () => {
     return new Promise((resolve) => {
@@ -145,7 +148,7 @@ export const saveSceneAsImage = async (scene) => {
         type: 'jpg',
         quality: 0.8
     });
-    const ImagePath = `${wx.env.USER_DATA_PATH}/scene.jpg`;
+    const ImagePath = `${wx.env.USER_DATA_PATH}/scene${i++}.jpg`;
     const ImageData = base64.replace(/^data:image\/\w+;base64,/, "");
     FSM.writeFileSync(ImagePath, ImageData, "base64");
     return ImagePath;
@@ -267,8 +270,6 @@ export const concatArrayToObjects = (result, showModel) => {
 
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
-        console.log(modelData.file_url, 'modelData.file_url')
-
         await scene.assets.releaseAsset('gltf', modelData.uid);
         if (!modelData.file_url) throw '无资源URL';
         let model = await scene.assets.loadAsset({
@@ -282,6 +283,8 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
         console.log(node, 'node')
 
         if (!node) return;
+        node.setId(modelData.uid)
+
         node.getComponent(XRFrameSystem.GLTF).setData({
             model: model.value,
         });
@@ -321,14 +324,16 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         });
         if (!scene) return;
         let material = await scene.createMaterial(
-            // await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
-            await scene.assets.getAsset('effect', 'standard'), {
+            await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
+                // await scene.assets.getAsset('effect', 'standard'), {
                 u_baseColorMap: video.texture,
             }
         );
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRMesh);
         if (!node) return;
+        node.setId(videoData.uid)
+
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
@@ -371,8 +376,9 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             // id:imageData.file_uid
 
         });
-        node.setId(imageData.file_uid)
+        node.setId(imageData.uid)
         node.setAttribute('states', 'cullOn: false');
+
         if (that.data.workflowType === 4 && that.nodeList) {
             that.nodeList.push(node)
         }
@@ -383,16 +389,19 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
                 that.triggerEvent('showInteractMedia', imageData.event);
                 if (that.data.workflowType === 4) return
                 clearTimeout(that.timer)
-                that.innerAudioContext2?.pause() // 播放
+                that.innerAudioContext2?.pause() // 关闭
+                that.triggerEvent('bgcMusicClose', {});
                 await that.StayPageShow()
 
             });
         }
         if (!markerShadow || !node) return;
+  
+
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
 
         if (!textList) return
-        if (!imageData.hasOwnProperty("text")) return
+        // if (!imageData.hasOwnProperty("text")) return
         if (!isNaN(imageData.location)) {
 
             that.textList.splice(imageData.location, 0, {
@@ -413,11 +422,11 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
 }
 export const replaceMaterial = async (scene, imageData, markerShadow, textList, that) => {
     try {
-        await scene.assets.releaseAsset('texture', imageData.file_uid);
+        await scene.assets.releaseAsset('texture', imageData.uid);
         if (!imageData.file_url) throw '无资源URL';
         let image = await scene.assets.loadAsset({
             type: 'texture',
-            assetId: imageData.file_uid,
+            assetId: imageData.uid,
             src: imageData.file_url,
         });
         if (!scene) return;
@@ -429,7 +438,7 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         material.renderQueue = 2500;
         material.alphaMode = "BLEND";
         if (!scene) return;
-        const node = scene.getElementById(imageData.file_uid);
+        const node = scene.getElementById(imageData.uid);
         console.log(node)
         if (!node) return;
         node.getComponent(XRFrameSystem.Mesh).setData({
@@ -441,6 +450,7 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         });
         // node.setId(imageData.file_uid)
         node.setAttribute('states', 'cullOn: false');
+
         if (that.data.workflowType === 4 && that.nodeList) {
             that.nodeList.push(node)
         }
@@ -452,6 +462,7 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
                 if (that.data.workflowType === 4) return
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 播放
+                that.triggerEvent('bgcMusicClose', {});
                 // await that.StayPageShow()
 
             });
@@ -460,7 +471,7 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
 
         if (!textList) return
-        if (!imageData.hasOwnProperty("text")) return
+        // if (!imageData.hasOwnProperty("text")) return
         if (!isNaN(imageData.location)) {
 
             that.textList.splice(imageData.location, 0, {
@@ -502,6 +513,7 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => 
                     threeD.rotation.z * (Math.PI / 180)
                 );
             }
+            console.log(transform.rotation)
             transform.position.setValue(threeD.position.x, threeD.position.y, threeD.position.z);
             that.triggerEvent('handleAssetsProgress', {
                 index: that.i++,
@@ -531,7 +543,7 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
                     var keyframe = generateTemplate1KeyFrame(Object.values(item['3d_info'].scale), index, 0, 2.5);
                     break;
                 case '模版二':
-                    var keyframe = generateTemplate2KeyFrame(Object.values(item['3d_info'].position), index);
+                    var keyframe = generateTemplate2KeyFrame(Object.values(item['3d_info'].scale));
                     break;
                 case '模版三':
                     var keyframe = generateTemplate3KeyFrame(Object.values(item['3d_info'].scale));
@@ -607,10 +619,13 @@ export const handleShadowRotate = (that) => {
             if (that.data.workflowType === 2 && that.data.p_arData.p_ar.template_type === "模版四") {
                 shadowRotateY(xMove, that.markerShadow2);
 
-            } else if (that.data.workflowType === 4) {
-
+            } else if (that.data.workflowType === 4 && that.data.p_arData.p_ar.template_type !== "模版四") {
                 shadowPositionY(yMove, that.markerShadow);
                 shadowPositionX(xMove, that.markerShadow);
+
+            } else if (that.data.workflowType === 4 && that.data.p_arData.p_ar.template_type === "模版四") {
+                // shadowRotateY(xMove, that.markerShadow);
+                // shadowRotateX(yMove, that.markerShadow);
 
             } else if (that.data.workflowType === 3 && that.data.p_arData.p_ar.template_type === "模版四") {
                 shadowRotateY(xMove, that.markerShadow2);
@@ -628,7 +643,10 @@ export const handleShadowRotate = (that) => {
         console.error('XR旋转手势处理错误: ', err);
     }
 }
-
+export const shadowRotateX = (deltaY, markerShadow) => {
+    const transform = markerShadow.getComponent(XRFrameSystem.Transform);
+    transform.rotation.x += deltaY / 200;
+}
 export const shadowRotateY = (deltaX, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     transform.rotation.y += deltaX / 200;
@@ -641,9 +659,17 @@ export const shadowPositionX = (deltaX, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     transform.position.x += deltaX / 100;
 }
-export const resetPosition = (markerShadow) => {
+export const resetPosition = (markerShadow, type) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
-    transform.position.setValue(0, 0, 0)
+    if (type === '模版四') {
+        transform.position.setValue(0, 0, -5)
+
+    } else {
+        transform.position.setValue(0, 0, 0)
+        transform.rotation.setValue(90 * (Math.PI / 180), 180 * (Math.PI / 180), 0)
+
+    }
+
 }
 export const handleTemplate4KeyFrame = (that) => {
     let animator = that.markerShadow.addComponent(XRFrameSystem.Animator);
@@ -735,9 +761,9 @@ export const releaseAssetList = (scene, list) => {
         }
     }
 }
-export const removeFromScene = (n1, n2, uid) => {
-    n1.removeChild(this.getElementById(uid))
-    n2.removeChild(this.getElementById(uid))
+export const removeFromScene = (n1, n2, node) => {
+    n1.removeChild(node)
+    n2.removeChild(node)
 
 
 }

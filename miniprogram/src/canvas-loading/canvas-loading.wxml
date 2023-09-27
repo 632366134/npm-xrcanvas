@@ -1,17 +1,21 @@
 <xr-scene wx:if="{{readyFlag}}" id="xr-scene" bind:ready="handleReady">
     <xr-assets bind:progress="handleAssetsProgress" bind:loaded="handleAssetsLoaded">
     </xr-assets>
-    <xr-camera id="camera" node-id="camera" clear-color="0.925 0.925 0.925 1" near="0.1" far="2000" position="0 0 -5">
-    </xr-camera>
-    <xr-node rotation="90 180 0" id="markerShadow" visible="{{true}}" node-id="markerShadow" position="0 0 0">
-        <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0" auto-rotate="speed:0 -0.1 0">
+    <xr-node>
 
+
+        <xr-node id="markerShadow3" node-id="markerShadow3" position="0 0 0">
         </xr-node>
+        <xr-node rotation="90 180 0" id="markerShadow" visible="{{true}}" node-id="markerShadow" position="0 0 0">
+            <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0" auto-rotate="speed:0 0.1 0">
+            </xr-node>
         </xr-node>
-        <xr-node node-id="lights">
-            <xr-light type="ambient" color="1 1 1" intensity="0.1" />
-            <xr-light type="directional" position="0 3 0" rotation="0 0 0" color="1 1 1" intensity="2.5" cast-shadow />
-            <xr-light type="directional" rotation="40 180 0" color="1 1 1" intensity="2" cast-shadow />
-            <xr-light type="directional" rotation="40 250 0" color="1 1 1" intensity="2" cast-shadow />
-        </xr-node>
+        <xr-camera id="camera" node-id="camera" position="0 0 -5" clear-color="0.925 0.925 0.925 1" target="" camera-orbit-control=""></xr-camera>
+    </xr-node>
+    <xr-node node-id="lights">
+        <xr-light type="ambient" color="1 1 1" intensity="0.1" />
+        <xr-light type="directional" position="0 3 0" rotation="0 0 0" color="1 1 1" intensity="2.5" cast-shadow />
+        <xr-light type="directional" rotation="40 180 0" color="1 1 1" intensity="2" cast-shadow />
+        <xr-light type="directional" rotation="40 250 0" color="1 1 1" intensity="2" cast-shadow />
+    </xr-node>
 </xr-scene>

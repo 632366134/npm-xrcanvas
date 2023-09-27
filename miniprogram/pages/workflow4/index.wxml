@@ -35,6 +35,10 @@
             <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
         </view>
         <image style="position: fixed; left: 0; bottom: 0;" src="{{url}}" mode=""/>
+        <button style="position: fixed; bottom: 120px;" bind:tap="setDefaultObjectsData">设置数据</button>
+        <button style="position: fixed; bottom:80px;right: 0;" bind:tap="removeFromScene">移除</button>
+        <button style="position: fixed; bottom: 80px;left: 0;" bind:tap="addToScene">添加</button>
+        <button style="position: fixed; bottom: 80px;" bind:tap="replaceMaterial">替换 </button>
         <button style="position: fixed; bottom: 40px;" bind:tap="captureCreatingScene">场景截图</button>
         <button style="position: fixed; bottom: 0;" bind:tap="resetPosition">复原位置</button>
 

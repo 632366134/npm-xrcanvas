@@ -31,7 +31,7 @@ Component({
             type: Object,
             default: {}
         },
-       XRHeight: {
+        XRHeight: {
             type: Number,
             default: null
         },
@@ -93,7 +93,8 @@ Component({
         },
         percent: 0,
         textDuration: 0,
-        loadingShow: false
+        loadingShow: false,
+        soundFlag: true
     },
     /**
      * 组件的方法列表
@@ -182,7 +183,7 @@ Component({
     },
     methods: {
         async getWorkList() {
-           console.log(this.data.workflowData,'workflowDataworkflowDataworkflowData')
+            console.log(this.data.workflowData, 'workflowDataworkflowDataworkflowData')
             const {
                 p_guide
             } = this.data.workflowData
@@ -285,7 +286,7 @@ Component({
                     duration,
                     progressColor
                 } = this.data.loadingData[detail.type]
-                console.log(imageUrl, duration, progressColor)
+                console.log(detail.handleAssetsLoaded, imageUrl)
                 this.setData({
                     p_loadingFlag: detail.handleAssetsLoaded,
                     p_scanFlag: false,
@@ -317,7 +318,7 @@ Component({
 
         },
         stayPage() {
-            console.log('stayPage',this.data.workflowData)
+            console.log('stayPage', this.data.workflowData)
             const {
                 eventFlag,
                 bgc_AudioFlag,
@@ -370,8 +371,8 @@ Component({
         eventFlagChange() {
             this.setData({
                 eventFlag: false,
-                event_image: null,
-                event_url: null
+                event_image: '',
+                event_url: ''
             })
         },
         bgcAudioFlagChange({
@@ -380,18 +381,30 @@ Component({
             console.log(detail, 'bgc_audioflagchange')
             this.setData({
                 bgc_AudioFlag: detail.bgc_AudioFlag,
+                soundFlag: true
+
             })
         },
         bgcMusicChange() {
             const node = this.selectComponent('#xr-canvas')
-            console.log(node.innerAudioContext2, 'innerAudioContext2')
             if (node.innerAudioContext2.paused) {
                 node.innerAudioContext2.play()
+                this.setData({
+                    soundFlag: true
+                })
 
             } else {
                 node.innerAudioContext2.pause()
+                this.setData({
+                    soundFlag: false
+                })
             }
 
         },
+        bgcMusicClose() {
+            this.setData({
+                soundFlag: false
+            })
+        }
     }
 })

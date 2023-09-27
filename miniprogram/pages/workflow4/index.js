@@ -3,6 +3,8 @@ import {
     getskuTemplatesList
 } from '../../src/xr-canvas/utils'
 import * as xrframe from '../../src/xr-canvas/xrframe'
+let i = 0
+let d = 0
 Page({
     data: {
         workflowType: 4,
@@ -105,7 +107,9 @@ Page({
         currentTarget
     }) {
         console.log(detail.value, currentTarget.dataset.index, 'e')
-        this.drawCanvas(detail.value, currentTarget.dataset.index)
+        // this.drawCanvas(detail.value, currentTarget.dataset.index)
+        this.text = detail.value
+        this.index = currentTarget.dataset.index
     },
     drawCanvas(text, index) {
         let p_arData = this.data.p_arData
@@ -138,22 +142,16 @@ Page({
 
                     console.log(res.tempFilePath); // 在这里可以获取到生成的 PNG 图片路径
                     if (p_arData.p_ar.template_type === '模版一' || p_arData.p_ar.template_type === '模版三') {
-                        // let textListRaw = p_arData.p_ar.text_list
-                        // textListRaw[index - 1].text = text
-                        // textListRaw[index - 1].file_url = res.tempFilePath
-                        // this.setData({
-                        //     textListRaw: textListRaw[index - 1]
-                        // })
+
                         this.result[index - 1].file_url = res.tempFilePath
+                        console.log(this.result[index - 1])
                         this.node2.replaceMaterial(this.result[index - 1])
                     } else {
-                        let screenListRaw = p_arData.p_ar.screen_list
-                        // screenListRaw[index - 1].text = text
-                        screenListRaw[index - 1].file_url = res.tempFilePath
-                        this.setData({
-                            screenListRaw: screenListRaw[index - 1]
-                        })
-                        this.node2.replaceMaterial(this.data.screenListRaw)
+                        let list = this.result.filter(v => v.type === "screen")
+                        list[index - 1].file_url = res.tempFilePath
+                        console.log(list[index - 1])
+
+                        this.node2.replaceMaterial(list[index - 1])
 
                     }
                 },
@@ -164,24 +162,40 @@ Page({
         });
     },
     async handleReadyFun() {
-        const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
-        console.log('handleReadyFunhandleReadyFunhandleReadyFun')
-        const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
-        await node2.setDefaultObjectsData(result)
+        // const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
+        // const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
+        // await node2.setDefaultObjectsData(result)
 
     },
     removeFromScene(uid) {
-        this.node2.removeFromScene(uid)
+        if (this.result.length === 0) return
+        console.log(this.result)
+        this.node2.removeFromScene(this.result[i++].uid)
     },
-    async addToScene(data) {
-        await this.node2.setDefaultObjectsData([data])
+    async setDefaultObjectsData() {
+        const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
+        const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
+        await this.node2.setDefaultObjectsData(this.result)
 
     },
     async captureCreatingScene() {
-       const url = await this.node2.saveSceneAsImage()
-       this.setData({url})
+        const url = await this.node2.saveSceneAsImage()
+        this.setData({
+            url
+        })
     },
-    resetPosition(){
-        this.node2.resetPosition()
+    resetPosition() {
+        this.node2.resetPosition(this.data.p_arData.p_ar.template_type)
+    },
+    replaceMaterial() {
+        this.drawCanvas(this.text, this.index)
+    },
+    async addToScene() {
+        let data = this.result[d++]
+        console.log(data, 'data')
+        if (data) {
+            await this.node2.setDefaultObjectsData([data])
+        }
+
     }
 })

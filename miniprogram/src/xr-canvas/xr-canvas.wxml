@@ -1,6 +1,5 @@
 <xr-scene wx:if="{{arReadyFlag}}" ar-system="modes:{{modes}}" id="xr-scene" bind:ready="handleReady" bind:ar-ready="handleARReady">
     <xr-assets bind:progress="handleAssetsProgress" bind:loaded="handleAssetsLoaded">
-        <xr-asset-material asset-id="removeBlack-mat" effect="removeBlack" />
     </xr-assets>
     <xr-node wx:if="{{trackerFlag}}">
         <xr-ar-tracker bind:ar-tracker-switch="handleTrackerSwitch" mode="Marker" src="{{obsItem.url}}" wx:key="{{obsItem.id}}" wx:for="{{obsList}}" wx:for-item="obsItem">
@@ -8,7 +7,7 @@
 
     </xr-node>
     <xr-node rotation="{{rotation[0]}} {{rotation[1]}} {{rotation[2]}}" id="markerShadow" visible="{{false}}" node-id="markerShadow" position="0 0 0" >
-        <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0" auto-rotate="speed:0 -0.1 0">
+        <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0" auto-rotate="speed:0 0.1 0">
         </xr-node>
     </xr-node>
     <xr-node  id="markerShadow3"  node-id="markerShadow3" position="0 0 0">
