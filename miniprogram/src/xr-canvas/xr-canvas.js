@@ -33,7 +33,6 @@ Component({
     },
     observers: {
         p_scanFlag(newVal) {
-            console.log(newVal, this.data.workflowType)
             if (newVal && this.data.workflowType === 3) {
                 this.setData({
                     trackerFlag: true
@@ -98,9 +97,7 @@ Component({
         },
         async detached() {
             await this.stopAnimatorAndVideo()
-            this.triggerEvent('bgc_AudioFlagChange', {
-                bgc_AudioFlag: false
-            })
+           
             this.innerAudioContext2?.stop()
             this.innerAudioContext2?.destroy()
             this.innerAudioContext2 = null
@@ -118,6 +115,8 @@ Component({
             if (this.scene) {
                 this.scene = null
             }
+          
+
         },
     },
     methods: {
@@ -125,21 +124,24 @@ Component({
             detail
         }) {
             let timer
-            console.log('tracked match', detail)
             const active = detail.value;
             const element = detail.el;
             this.triggerEvent('handleTrackerSwitch', {
                 handleTrackerSwitch: active
+            }, {
+                composed: true,
+                capturePhase: false,
+                bubbles: true
             })
             if (active) {
                 this.active = true
                 if (this.data.workflowType === 3) {
-                    if(!this.loading) {
+                    if (!this.loading) {
                         let {
                             p_ar
                         } = await xrframe.recognizeCigarette(this.scene, this)
                     }
-                   
+
                     if (this.data.Assetsloaded) {
 
 
@@ -167,6 +169,10 @@ Component({
                         this.triggerEvent('handleAssetsLoaded', {
                             handleAssetsLoaded: true,
                             type: this.data.p_arData.p_ar.template_type
+                        }, {
+                            composed: true,
+                            capturePhase: false,
+                            bubbles: true
                         })
                     }
 
@@ -202,8 +208,12 @@ Component({
         async concatAndLoadAssets(result, flag = false) {
             if (this.data.workflowType !== 3) {
                 this.triggerEvent('handleAssetsLoaded', {
-                    handleAssetsLoaded: true,
+                    handleAssetsLoaded: false,
                     type: result.template_type
+                }, {
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
                 })
             }
 
@@ -243,15 +253,12 @@ Component({
                 }
             }
             await Promise.all(promiseList).then(async results => {
-                console.log(results, 'resultsresultsresultsresults')
-
-                // this.markerShadow2.getComponent('auto-rotate').setData({speed: [2, 1, 3]});
                 this.data.Assetsloaded = true
                 this.triggerEvent('handleAssetsLoaded', {
-                    handleAssetsLoaded: false,
+                    handleAssetsLoaded: true,
                 }, {
                     composed: true,
-                    capturePhase: true,
+                    capturePhase: false,
                     bubbles: true
                 })
 
@@ -300,22 +307,21 @@ Component({
             })
 
         },
-        async LoadAssetsAfter() {
-
-        },
         async startAnimatorAndVideo() {
             await xrframe.startAnimatorAndVideo(this)
         },
         async stopAnimatorAndVideo() {
             await xrframe.stopAnimatorAndVideo(this, true)
         },
-        async stopAnimatorAndVideo2() {
-            console.log('222')
-        },
+
         async StayPageShow(timer) {
             if (this.stay_duration) {
                 this.timer = setTimeout(() => {
-                    this.triggerEvent('stayPage')
+                    this.triggerEvent('stayPage', {}, {
+                        composed: true,
+                        capturePhase: false,
+                        bubbles: true
+                    })
                     clearTimeout(this.timer)
                 }, this.stay_duration);
             }
@@ -324,27 +330,29 @@ Component({
         handleReady({
             detail
         }) {
-            this.triggerEvent('handleReady')
+            this.triggerEvent('handleReady', {}, {
+                composed: true,
+                capturePhase: false,
+                bubbles: true
+            })
             const xrScene = this.scene = detail.value;
             this.xrFrameSystem = wx.getXrFrameSystem();
-            console.log('xr-scene', xrScene);
 
         },
         handleAssetsProgress: function ({
             detail
-        }) {
-            console.log('assets progress', detail.value);
-        },
+        }) {},
         handleAssetsLoaded: function ({
             detail
-        }) {
-            console.log('assets loaded', detail.value);
-
-        },
+        }) {},
         async handleARReady({
             detail
         }) {
-            this.triggerEvent('handleARReady')
+            this.triggerEvent('handleARReady', {}, {
+                composed: true,
+                capturePhase: false,
+                bubbles: true
+            })
             const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
             const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
             this.Transform = this.markerShadow.getComponent(this.xrFrameSystem.Transform)
@@ -397,7 +405,6 @@ Component({
                             await this.StayPageShow(timer)
                         }
                         await this.gyroscope(p_ar)
-                        console.log(this.scene)
                         clearTimeout(timer2)
                     }, 3000);
 
@@ -416,7 +423,6 @@ Component({
 
                 }
             } else if (this.data.workflowType === 3) {
-                console.log(this.data.p_arData, 'cigarette')
                 let obsList = []
                 const {
                     cigarette
@@ -465,7 +471,6 @@ Component({
 
 
         },
-        createObslist() {},
         async gyroscope(p_ar) {
             if (p_ar.template_type === "模版四") return
             let s = this.s = ({
@@ -481,20 +486,18 @@ Component({
             })
         },
         handleTemplate3and4(type) {
-            console.log('handleTemplate3and4,t', type)
             if (type === "模版三" || type === "模版四") {
 
                 this.innerAudioContext2 = wx.createInnerAudioContext({
                     useWebAudioImplement: false // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
                 })
-                console.log(xrframe.backgroundAudioList[type], 'xrframe.backgroundAudioList.type')
                 this.innerAudioContext2.src = xrframe.backgroundAudioList[type]
                 this.innerAudioContext2.loop = true
                 // await xrframe.audioFadeOut(this.innerAudioContext2)
             }
         },
-        removeFromScene(uid){
-            xrframe.removeFromScene(this.markerShadow,this.markerShadow2,uid)
+        removeFromScene(uid) {
+            xrframe.removeFromScene(this.markerShadow, this.markerShadow2, uid)
         }
 
 

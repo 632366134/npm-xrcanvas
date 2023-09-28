@@ -12,12 +12,18 @@
         </view>
     </view>
     <view class="changeBox" wx:if="{{box3Flag}}">
-        <npm-xrframe bind:handleReadyFun="handleReadyFun" wx:if="{{flag}}" class="npm-xrframe" id="npm-xrframe" workflowData="{{workflowData}}" workflowType="{{workflowType}}" p_arData="{{p_arData}}" textListRaw="{{textListRaw}}" screenListRaw="{{screenListRaw}}" XRWidth="{{XRWidth}}" XRHeight="{{XRHeight}}"></npm-xrframe>
+        <npm-xrframe bind:handleAssetsLoaded="handleAssetsLoaded" bind:handleAssetsProgress="loadingProgress" bind:handleReady="handleReady" wx:if="{{flag}}" class="npm-xrframe" id="npm-xrframe" workflowType="{{workflowType}}" XRWidth="{{XRWidth}}" XRHeight="{{XRHeight}}"></npm-xrframe>
         <view class="template" wx:if="{{p_arData.p_ar.template_type ==='模版一'}}">
             <view class="templateInput">文案一<input bindblur="bindblur" data-index="1" value="{{value1}}" type="text" /></view>
             <view class="templateInput">文案二<input bindblur="bindblur" data-index="2" value="{{value2}}" type="text" /></view>
             <view class="templateInput">文案三<input bindblur="bindblur" data-index="3" value="{{value3}}" type="text" /></view>
             <view class="templateInput">文案四<input bindblur="bindblur" data-index="4" value="{{value4}}" type="text" /></view>
+            <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
+        </view>
+        <view class="template" wx:if="{{p_arData.p_ar.template_type ==='模版二'}}">
+            <view class="templateInput">文案一<input bindblur="bindblur" data-index="1" value="{{value1}}" type="text" /></view>
+            <view class="templateInput">文案二<input bindblur="bindblur" data-index="2" value="{{value2}}" type="text" /></view>
+
             <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
         </view>
         <view class="template" wx:if="{{p_arData.p_ar.template_type ==='模版三'}}">
@@ -34,7 +40,7 @@
 
             <canvas style="height: 200px;width: 200px;" canvas-id="textCanvas"></canvas>
         </view>
-        <image style="position: fixed; left: 0; bottom: 0;" src="{{url}}" mode=""/>
+        <image style="position: fixed; left: 0; bottom: 0;" src="{{url}}" mode="" />
         <button style="position: fixed; bottom: 120px;" bind:tap="setDefaultObjectsData">设置数据</button>
         <button style="position: fixed; bottom:80px;right: 0;" bind:tap="removeFromScene">移除</button>
         <button style="position: fixed; bottom: 80px;left: 0;" bind:tap="addToScene">添加</button>

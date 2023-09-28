@@ -7,27 +7,12 @@ Component({
      * 组件的属性列表
      */
     properties: {
-        p_arData: {
-            type: Object,
-            default: {}
-        },
-        workflowData: {
-            type: Object,
-            default: {}
 
-        },
         workflowType: {
             type: Number,
             default: null
         },
-        textListRaw: {
-            type: Object,
-            default: {}
-        },
-        screenListRaw: {
-            type: Object,
-            default: {}
-        }
+
     },
     observers: {
         // async textListRaw(newVal) {
@@ -98,10 +83,8 @@ Component({
             this.animatorList = []
             this.videoList = []
         },
-        detached() {
-            this.triggerEvent('bgc_AudioFlagChange', {
-                bgc_AudioFlag: false
-            })
+        async detached() {
+            await xrframe.stopAnimatorAndVideo(this,true)
             this.innerAudioContext2?.stop()
             this.innerAudioContext2?.destroy()
             this.innerAudioContext2 = null
@@ -123,25 +106,26 @@ Component({
         async replaceMaterial(data) {
             await xrframe.replaceMaterial(this.scene, data, undefined, undefined, this)
         },
-        async setDefaultObjectsData(list) {
+        async setDefaultObjectsData(list, template_type) {
             wx.showLoading({
                 title: '加载中',
                 mask: true
             })
-            let {
-                template_type
-            } = this.data.p_arData.p_ar
+            this.triggerEvent('handleAssetsLoaded', {
+                handleAssetsLoaded: false,
+            },{
+                composed: true,
+                capturePhase: false,
+                bubbles: true
+            })
             if (template_type === "模版四") {
                 this.markerShadow.getComponent(this.XR.Transform).rotation.x = 30 * (Math.PI / 180)
-                console.log(this.camera, 'c')
                 this.camera.getComponent(this.XR.Camera).setData({
                     target: this.markerShadow.getComponent(this.XR.Transform)
                 })
                 this.camera.addComponent(this.XR.CameraOrbitControl, {});
             }
-            // const {
-            //     p_ar
-            // } = data
+          
             this.i = 1
             this.list = list
             // const list = this.list = await xrframe.concatArrayToObjects(p_ar, true)
@@ -172,45 +156,25 @@ Component({
             }
             await Promise.all(promiseList).then(async results => {
                 this.data.Assetsloaded = true
-                // await xrframe.addTemplateTextAnimator(p_ar.template_type, this.scene, this)
-                // if (this.loaded) return
-                // if (this.data.textListRaw !== []) {
-                //     await this.typeOneLoading(this.data.textListRaw)
-
-                // }
-                // if (this.data.screenListRaw !== []) {
-                //     await this.typeOneLoading(this.data.screenListRaw)
-                // }
                 if (template_type !== "模版四") {
-                    await xrframe.handleShadowRotate(this)
+                    await xrframe.handleShadowRotate(this,template_type)
                 }
+                await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
                 await xrframe.startAnimatorAndVideo(this)
+                this.triggerEvent('handleAssetsLoaded', {
+                    handleAssetsLoaded: true,
+                },{
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
+                })
                 wx.hideLoading()
 
             })
         },
-        // async typeOneLoading(textListRaw) {
-        //     wx.showLoading({
-        //         title: '加载中',
-        //         mask: true
-        //     })
-        //     let promiseList = []
-        //     for (let item of textListRaw || []) {
-        //         if (!item.file_url) continue;
-        //         if (!item.uid) item.uid = xrframe.uuid();
-        //         item.type = "text";
-        //         const p = xrframe.loadImageObject(this.scene, item, this.markerShadow, true, this)
-        //         promiseList.push(p)
-
-
-        //     }
-        //     await Promise.all(promiseList)
-        //     await xrframe.handleShadowRotate(this)
-        //     await xrframe.startAnimatorAndVideo(this)
-        //     wx.hideLoading()
-
-        // },
-
+        async concatArrayToObjects(p_ar, flag) {
+            return await xrframe.concatArrayToObjects(p_ar, flag)
+        },
         async handleReady({
             detail
         }) {
@@ -219,17 +183,15 @@ Component({
             const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
             const camera = this.camera = this.scene.getElementById('camera')
 
-            this.nodeList = []
 
             this.XR = wx.getXrFrameSystem();
-            this.triggerEvent('handleReadyFun', {}, {
+            this.triggerEvent('handleReady', {}, {
                 composed: true,
-                capturePhase: true,
+                capturePhase: false,
                 bubbles: true
             })
         },
         removeFromScene(uid) {
-            console.log(this.scene.getElementById(uid), 'this.scene.getElementById(uid)')
             xrframe.removeFromScene(this.markerShadow, this.markerShadow2, this.scene.getElementById(uid))
         },
         async saveSceneAsImage() {

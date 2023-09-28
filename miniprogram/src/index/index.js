@@ -71,22 +71,22 @@ Component({
         bgc_AudioFlag: false,
         loadingData: {
             '模版一': {
-                imageUrl: '/assets/type1.png',
+                imageUrl: '../assets/type1.png',
                 duration: 10,
                 progressColor: "#2DAAD5"
             },
             '模版二': {
-                imageUrl: '/assets/type2.png',
+                imageUrl: '../assets/type2.png',
                 duration: 30,
                 progressColor: "#75AD66"
             },
             '模版三': {
-                imageUrl: '/assets/type3.png',
+                imageUrl: '../assets/type3.png',
                 duration: 10,
                 progressColor: "#32B690",
             },
             '模版四': {
-                imageUrl: '/assets/type4.png',
+                imageUrl: '../assets/type4.png',
                 duration: 30,
                 progressColor: "#BC9F81"
             },
@@ -101,7 +101,6 @@ Component({
      */
     lifetimes: {
         async attached() {
-            console.log(this.data.workflowType)
             if (this.data.workflowType === 2) {
                 const {
                     p_guide,
@@ -176,14 +175,14 @@ Component({
 
         },
         detached() {
-            // this.setData({
-            //     xrShow: false
-            // })
+            this.setData({
+                xrShow: false,
+                loadingShow:false
+            })
         }
     },
     methods: {
         async getWorkList() {
-            console.log(this.data.workflowData, 'workflowDataworkflowDataworkflowData')
             const {
                 p_guide
             } = this.data.workflowData
@@ -224,7 +223,6 @@ Component({
         type3guideShow(p_guide) {
             this.setData({
                 p_guideFlag: true,
-                xrShow: true
             })
             if (p_guide.audio_url) {
                 this.innerAudioContext = wx.createInnerAudioContext({
@@ -243,6 +241,8 @@ Component({
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
+                    xrShow: true
+
                 })
                 clearTimeout(timer)
             }, p_guide.duration * 1000);
@@ -279,16 +279,17 @@ Component({
         loadingChange({
             detail
         }) {
-            console.log(detail, 'loadingchange')
-            if (detail.handleAssetsLoaded) {
+            if (this.data.workflowType === 4) return
+            console.log(detail, 'detaildetaildetail')
+            if (!detail.handleAssetsLoaded) {
                 const {
                     imageUrl,
                     duration,
                     progressColor
                 } = this.data.loadingData[detail.type]
-                console.log(detail.handleAssetsLoaded, imageUrl)
+                console.log(imageUrl, duration, progressColor)
                 this.setData({
-                    p_loadingFlag: detail.handleAssetsLoaded,
+                    p_loadingFlag: !detail.handleAssetsLoaded,
                     p_scanFlag: false,
                     image_url: imageUrl,
                     textDuration: duration,
@@ -297,7 +298,7 @@ Component({
 
             } else {
                 this.setData({
-                    p_loadingFlag: detail.handleAssetsLoaded,
+                    p_loadingFlag: !detail.handleAssetsLoaded,
                     p_scanFlag: false,
                 })
 
@@ -307,7 +308,6 @@ Component({
         loadingProgress({
             detail
         }) {
-            console.log(detail, 'loadingProgress')
             const {
                 index,
                 length
@@ -318,7 +318,6 @@ Component({
 
         },
         stayPage() {
-            console.log('stayPage', this.data.workflowData)
             const {
                 eventFlag,
                 bgc_AudioFlag,
@@ -349,7 +348,7 @@ Component({
         showInteractMedia({
             detail
         }) {
-            console.log(detail, 'detail')
+            if (this.data.eventFlag) return
             const {
                 image_url,
                 video_url
@@ -378,7 +377,6 @@ Component({
         bgcAudioFlagChange({
             detail
         }) {
-            console.log(detail, 'bgc_audioflagchange')
             this.setData({
                 bgc_AudioFlag: detail.bgc_AudioFlag,
                 soundFlag: true

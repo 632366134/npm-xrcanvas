@@ -147,7 +147,7 @@ Page({
                         console.log(this.result[index - 1])
                         this.node2.replaceMaterial(this.result[index - 1])
                     } else {
-                        let list = this.result.filter(v => v.type === "screen")
+                        let list = this.result.filter(v => v.type === "screen" || v.type === "text" || v.type === "image")
                         list[index - 1].file_url = res.tempFilePath
                         console.log(list[index - 1])
 
@@ -161,7 +161,8 @@ Page({
             });
         });
     },
-    async handleReadyFun() {
+    async handleReady() {
+        console.log("handleReadyhandleReadyhandleReady")
         // const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
         // const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
         // await node2.setDefaultObjectsData(result)
@@ -174,8 +175,9 @@ Page({
     },
     async setDefaultObjectsData() {
         const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
-        const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
-        await this.node2.setDefaultObjectsData(this.result)
+        const result = this.result = await node2.concatArrayToObjects(this.data.p_arData.p_ar, true)
+        console.log(result, 'resultresultresult')
+        await this.node2.setDefaultObjectsData(this.result, this.data.p_arData.p_ar.template_type)
 
     },
     async captureCreatingScene() {
@@ -192,10 +194,15 @@ Page({
     },
     async addToScene() {
         let data = this.result[d++]
-        console.log(data, 'data')
         if (data) {
-            await this.node2.setDefaultObjectsData([data])
+            await this.node2.setDefaultObjectsData([data], this.data.p_arData.p_ar.template_type)
         }
 
+    },
+    loadingProgress(e) {
+        console.log(e, 'loadingProgressloadingProgress')
+    },
+    handleAssetsLoaded({detail}) {
+        console.log(detail.handleAssetsLoaded,'handleAssetsLoadedhandleAssetsLoaded')
     }
 })

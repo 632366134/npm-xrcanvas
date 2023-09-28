@@ -1,6 +1,6 @@
 <view class="container">
     <xr-canvas bind:bgcMusicClose="bgcMusicClose" id="xr-canvas" wx:if="{{xrShow}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;display:block;z-index: 99; " bind:handleAssetsLoaded="loadingChange" bind:handleAssetsProgress="loadingProgress" bind:stayPage="stayPage" workflowType="{{workflowType}}" p_arData="{{p_arData}}" workflowData="{{workflowData}}" bind:showInteractMedia="showInteractMedia" bind:bgcAudioFlagChange="bgcAudioFlagChange" p_scanFlag="{{p_scanFlag}}"></xr-canvas>
-    <canvas-loading bind:bgcMusicClose="bgcMusicClose" id="canvas-loading" wx:if="{{loadingShow}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;margin:auto;display:block;z-index: 99; " bind:handleAssetsLoaded="loadingChange" bind:handleAssetsProgress="loadingProgress" workflowType="{{workflowType}}" p_arData="{{p_arData}}" workflowData="{{workflowData}}" textListRaw="{{textListRaw}}" screenListRaw="{{screenListRaw}}" bind:showInteractMedia="showInteractMedia"></canvas-loading>
+    <canvas-loading bind:bgcMusicClose="bgcMusicClose" id="canvas-loading" wx:if="{{loadingShow}}" width="{{renderWidth}}" height="{{renderHeight}}" style="width:{{width}}px;height:{{height}}px;margin:auto;display:block;z-index: 99; " bind:handleAssetsLoaded="loadingChange" bind:handleAssetsProgress="loadingProgress" workflowType="{{workflowType}}" bind:showInteractMedia="showInteractMedia"></canvas-loading>
     <view class="error" wx:if="{{unSupport}}">{{unSupport}}</view>
     <view class="p_guide" wx:if="{{p_guideFlag}}">
         <image class="p_guideFlag_image" wx:if="{{workflowData.p_guide.image_url}}" src="{{workflowData.p_guide.image_url}}" mode="" />
@@ -9,7 +9,7 @@
     <view class="p_scan" wx:if="{{p_scanFlag}}">
         <image class="p_scan_image" src="{{workflowData.p_scan.image_url}}" mode="aspectFill" />
     </view>
-    <view class="p_loading" wx:if="{{p_loadingFlag}}">
+    <view catchtap class="p_loading" wx:if="{{p_loadingFlag}}">
         <image class="p_loading_image" src="{{image_url}}" mode="aspectFit" />
         <text>AR场景元素加载中...</text>
         <view class="progress-box">
@@ -27,9 +27,9 @@
         <view class="p_EVENT_video_border" wx:if="{{event_url}}">
             <video controls="{{true}}" autoplay class="p_EVENT_video" src="{{event_url}}" />
         </view>
-        <button bind:tap="eventFlagChange">关闭</button>
+        <button class="closeBtn" bind:tap="eventFlagChange">关闭</button>
     </view>
     <view class="bgc_Audio" wx:if="{{bgc_AudioFlag}}" bind:tap="bgcMusicChange">
-        <image class="bgc_Audio_image" src="{{soundFlag ?'/assets/on.png':'/assets/off.png'}}" mode="aspectFit" />
+        <image class="bgc_Audio_image" src="{{soundFlag ?'../assets/on.png':'../assets/off.png'}}" mode="aspectFit" />
     </view>
 </view>

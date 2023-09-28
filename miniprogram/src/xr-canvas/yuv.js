@@ -83,5 +83,6 @@ export const YUV420ToRGB = (yArray, uvArray, width, height) => {
     return rgbArray;
 }
 export const incompatibleDevice = (scene) => {
-    return scene.share.supported;
+    const deviceInfo = wx.getDeviceInfo()
+    return scene.share.supported && !(deviceInfo.cpuType?.includes('麒麟980') || deviceInfo.cpuType?.includes('麒麟990'));
 }

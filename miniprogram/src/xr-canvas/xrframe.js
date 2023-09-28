@@ -3,6 +3,8 @@ import {
     homeRecognizeYUV
 } from '/utils';
 import '../components/AutoRotate'
+import '../components/transparentVideos'
+
 
 import * as YUVUtils from './yuv';
 import {
@@ -54,7 +56,6 @@ export const getCameraAuthorize = () => {
 
 export const handleXRSupport = (that) => {
     let xrSupport = handleXRCompatibility();
-    xrSupport = true
     if (xrSupport !== true) {
         that.setData({
             unSupport: xrSupport,
@@ -73,7 +74,6 @@ export const initXRFrame = (that, width, height) => {
         windowHeight: windowHeight,
         pixelRatio: dpi,
     } = wx.getSystemInfoSync();
-    console.log(that.data, 'this.data')
 
     that.setData({
         "width": width || windowWidth,
@@ -88,7 +88,7 @@ export const handleXRCompatibility = () => {
     const lowestVersion = {
         iOS: '8.0.36',
         Android: '8.0.35',
-        SDK: '2.32.0'
+        SDK: '3.0.0'
     };
     const info = wx.getSystemInfoSync();
     const systemType = info.system.split(' ')[0];
@@ -152,6 +152,15 @@ export const saveSceneAsImage = async (scene) => {
     const ImageData = base64.replace(/^data:image\/\w+;base64,/, "");
     FSM.writeFileSync(ImagePath, ImageData, "base64");
     return ImagePath;
+}
+export const saveImage = async (scene) => {
+    if (!YUVUtils.incompatibleDevice(scene)) {
+        let rgbData = YUVUtils.arRawDataToRGB(scene);
+        return rgbData
+    } else {
+        let imagePath = await saveSceneAsImage(scene);
+        return imagePath
+    }
 }
 
 export const recognizeCigarette = (scene, that = null) => {
@@ -261,7 +270,6 @@ export const concatArrayToObjects = (result, showModel) => {
             result.model.type = "model";
             objects.push(result.model);
         }
-        console.log(objects, result)
         return objects;
     } catch (err) {
         console.error('3D素材数据处理错误: ', err);
@@ -277,10 +285,8 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
             assetId: modelData.uid,
             src: modelData.file_url
         });
-        console.log(model)
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRGLTF);
-        console.log(node, 'node')
 
         if (!node) return;
         node.setId(modelData.uid)
@@ -288,7 +294,6 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
         node.getComponent(XRFrameSystem.GLTF).setData({
             model: model.value,
         });
-        console.log(node, 'node')
 
         if (!node) return;
         node.event.addOnce('gltf-loaded', (detail) => {
@@ -333,10 +338,11 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         const node = scene.createElement(XRFrameSystem.XRMesh);
         if (!node) return;
         node.setId(videoData.uid)
-
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
+            assetId: `material-${imageData.uid}`,
+
             // uid: videoData.uid,
         });
         if (!videoList) return;
@@ -353,6 +359,13 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
     try {
         await scene.assets.releaseAsset('texture', imageData.uid);
         if (!imageData.file_url) throw '无资源URL';
+        if (imageData.type === "image") {
+            const {
+                rotation
+            } = imageData['3d_info'];
+            [rotation.y, rotation.z] = [rotation.z, rotation.y];
+        }
+
         let image = await scene.assets.loadAsset({
             type: 'texture',
             assetId: imageData.uid,
@@ -372,6 +385,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
+            assetId: `material-${imageData.uid}`,
             // uid: imageData.uid,
             // id:imageData.file_uid
 
@@ -379,14 +393,15 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         node.setId(imageData.uid)
         node.setAttribute('states', 'cullOn: false');
 
-        if (that.data.workflowType === 4 && that.nodeList) {
-            that.nodeList.push(node)
-        }
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
             node.event.add('touch-shape', async () => {
                 if (that.data.workflowType === 3 && !that.firstFlag) return
-                that.triggerEvent('showInteractMedia', imageData.event);
+                that.triggerEvent('showInteractMedia', imageData.event, {
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
+                });
                 if (that.data.workflowType === 4) return
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 关闭
@@ -396,7 +411,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             });
         }
         if (!markerShadow || !node) return;
-  
+
 
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
 
@@ -439,11 +454,12 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         material.alphaMode = "BLEND";
         if (!scene) return;
         const node = scene.getElementById(imageData.uid);
-        console.log(node)
         if (!node) return;
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
+            assetId: `material-${imageData.uid}`,
+
             // uid: imageData.uid,
             // id:imageData.file_uid
 
@@ -451,14 +467,16 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         // node.setId(imageData.file_uid)
         node.setAttribute('states', 'cullOn: false');
 
-        if (that.data.workflowType === 4 && that.nodeList) {
-            that.nodeList.push(node)
-        }
+
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
             node.event.add('touch-shape', async () => {
                 if (that.data.workflowType === 3 && !that.firstFlag) return
-                that.triggerEvent('showInteractMedia', imageData.event);
+                that.triggerEvent('showInteractMedia', imageData.event, {
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
+                });
                 if (that.data.workflowType === 4) return
                 clearTimeout(that.timer)
                 that.innerAudioContext2?.pause() // 播放
@@ -503,21 +521,26 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => 
                 transform.rotation.setValue(
                     threeD.rotation.x * (Math.PI / 180) + (Math.PI / 2),
                     threeD.rotation.y * (Math.PI / 180),
-                    threeD.rotation.z * (Math.PI / 180)
+                    threeD.rotation.z * (Math.PI / 180),
+
                 );
             } else {
                 transform.scale.setValue(threeD.scale.x, threeD.scale.y, threeD.scale.z);
                 transform.rotation.setValue(
                     threeD.rotation.x * (Math.PI / 180),
                     threeD.rotation.y * (Math.PI / 180),
-                    threeD.rotation.z * (Math.PI / 180)
+                    threeD.rotation.z * (Math.PI / 180),
+
                 );
             }
-            console.log(transform.rotation)
             transform.position.setValue(threeD.position.x, threeD.position.y, threeD.position.z);
             that.triggerEvent('handleAssetsProgress', {
                 index: that.i++,
                 length: that.list.length
+            }, {
+                composed: true,
+                capturePhase: false,
+                bubbles: true
             })
             resolve();
         } catch (err) {
@@ -534,7 +557,6 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
             await handleTemplate4KeyFrame(that)
             return
         }
-        console.log(that.textList, 'textList')
         for (let [index, item] of that.textList.entries()) {
             let animator = item.node.addComponent(XRFrameSystem.Animator);
 
@@ -593,8 +615,11 @@ export const stopAnimatorAndVideo = async (that, release) => {
     }
 }
 
-export const handleShadowRotate = (that) => {
+export const handleShadowRotate = (that, type = undefined) => {
     try {
+        if (!type) {
+            type = that.data.p_arData.p_ar?.template_type
+        }
         that.handleTouchStart = (event) => {
             if (event.touches.length !== 1) return;
             that.setData({
@@ -616,18 +641,18 @@ export const handleShadowRotate = (that) => {
                     clientY: event.touches[0].clientY,
                 }
             });
-            if (that.data.workflowType === 2 && that.data.p_arData.p_ar.template_type === "模版四") {
+            if (that.data.workflowType === 2 && type === "模版四") {
                 shadowRotateY(xMove, that.markerShadow2);
 
-            } else if (that.data.workflowType === 4 && that.data.p_arData.p_ar.template_type !== "模版四") {
+            } else if (that.data.workflowType === 4 && type !== "模版四") {
                 shadowPositionY(yMove, that.markerShadow);
                 shadowPositionX(xMove, that.markerShadow);
 
-            } else if (that.data.workflowType === 4 && that.data.p_arData.p_ar.template_type === "模版四") {
+            } else if (that.data.workflowType === 4 && type === "模版四") {
                 // shadowRotateY(xMove, that.markerShadow);
                 // shadowRotateX(yMove, that.markerShadow);
 
-            } else if (that.data.workflowType === 3 && that.data.p_arData.p_ar.template_type === "模版四") {
+            } else if (that.data.workflowType === 3 && type === "模版四") {
                 shadowRotateY(xMove, that.markerShadow2);
 
             } else {
@@ -745,15 +770,15 @@ export const releaseAssetList = (scene, list) => {
             for (const obj of list) {
                 if (!!!obj) continue
                 if (obj.type === 'text') {
-                    scene.assets.releaseAsset('texture', obj.uid);
+                    scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else if (obj.type === "model") {
                     scene.assets.releaseAsset('gltf', obj.uid);
                 } else if (obj.type === 'video') {
-                    scene.assets.releaseAsset('video-texture', obj.uid);
+                    scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else if (obj.type === 'screen') {
-                    scene.assets.releaseAsset('texture', obj.uid);
+                    scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else if (obj.type === 'image') {
-                    scene.assets.releaseAsset('texture', obj.uid);
+                    scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else {}
             }
         } catch (error) {

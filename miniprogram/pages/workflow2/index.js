@@ -22,6 +22,7 @@ Page({
         })
     },
     onUnload() {
+        this.setData({flag:false})
     },
     async loadingChange({
         detail

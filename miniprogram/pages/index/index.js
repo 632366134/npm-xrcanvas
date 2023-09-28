@@ -110,7 +110,6 @@ Page({
         const {
             result
         } = await getArList("10,1")
-        console.log(result, 'd')
         this.setData({
             p_arData: result.items,
         })
@@ -122,7 +121,6 @@ Page({
     async loadingChange({
         detail
     }) {
-        console.log(detail, 'loadingchange')
         if (!detail.handleAssetsLoaded) return
         const node = this.node = this.selectComponent('#npm-xrframe').selectComponent('#xr-canvas')
         await this.node.stopAnimatorAndVideo2()
