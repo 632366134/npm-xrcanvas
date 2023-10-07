@@ -1,5 +1,5 @@
 const url = 'http://dev-tob-anhui-ar.aimall-tech.com'
-const Authorization = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOjF9.eyJhY2NvdW50X3VpZCI6InUtY2pqZ2l0czlhcXBucTJiMmoybDAiLCJleHBpcmVkIjoxNjk2NDg5NDAyfQ.7lrl83Ssaz3_twDB70vGk94zOEQaJXyBdKi11ixhW8w'
+const Authorization = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOjF9.eyJhY2NvdW50X3VpZCI6InUtY2pqZ2l0czlhcXBucTJiMmoybDAiLCJleHBpcmVkIjoxNjk5MjM0NzkxfQ.TKbphPPf3ZLjaFSej5n9jtwPJ2oI0DSJ36N-NPt_aBA'
 export const homeRecognizeYUV = (data) => {
     return new Promise((resolve, reject) => {
         wx.request({

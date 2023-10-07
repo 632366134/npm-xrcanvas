@@ -96,8 +96,10 @@ Component({
             }
         },
         async detached() {
+            console.log(this.scene, this.list)
+            xrframe.releaseAssetList(this.scene, this.list)
             await this.stopAnimatorAndVideo()
-           
+
             this.innerAudioContext2?.stop()
             this.innerAudioContext2?.destroy()
             this.innerAudioContext2 = null
@@ -115,7 +117,7 @@ Component({
             if (this.scene) {
                 this.scene = null
             }
-          
+
 
         },
     },
@@ -221,10 +223,11 @@ Component({
             // const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
             const markerShadow = this.markerShadow
             const markerShadow2 = this.markerShadow2
-            this.i = 1
+            this.i = 2
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
             if (list.length === 0) return
             const promiseList = []
+            await xrframe.loadENVObject(this.scene, this)
             for (const obj of list) {
                 if (obj.type === 'text') {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
@@ -486,7 +489,7 @@ Component({
             })
         },
         handleTemplate3and4(type) {
-            if (type === "模版三" || type === "模版四") {
+            if (type === "模版二" || type === "模版三" || type === "模版四") {
 
                 this.innerAudioContext2 = wx.createInnerAudioContext({
                     useWebAudioImplement: false // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项

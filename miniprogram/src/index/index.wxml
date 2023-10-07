@@ -13,7 +13,7 @@
         <image class="p_loading_image" src="{{image_url}}" mode="aspectFit" />
         <text>AR场景元素加载中...</text>
         <view class="progress-box">
-            <progress stroke-width="8" border-radius="20" activeColor="{{progressColor}}" backgroundColor="#999" percent="{{percent}}" />
+            <progress active-mode="forwards" active stroke-width="8" border-radius="20" activeColor="{{progressColor}}" backgroundColor="#999" percent="{{percent}}" />
         </view>
         <view class="waitText">预计等待时间{{textDuration}}秒...</view>
 

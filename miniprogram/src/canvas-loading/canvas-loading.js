@@ -84,7 +84,8 @@ Component({
             this.videoList = []
         },
         async detached() {
-            await xrframe.stopAnimatorAndVideo(this,true)
+            xrframe.releaseAssetList(this.scene, this.list)
+            await xrframe.stopAnimatorAndVideo(this, true)
             this.innerAudioContext2?.stop()
             this.innerAudioContext2?.destroy()
             this.innerAudioContext2 = null
@@ -105,15 +106,19 @@ Component({
     methods: {
         async replaceMaterial(data) {
             await xrframe.replaceMaterial(this.scene, data, undefined, undefined, this)
+            await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
+            await xrframe.stopAnimatorAndVideo(this, false)
+            await xrframe.startAnimatorAndVideo(this)
         },
         async setDefaultObjectsData(list, template_type) {
+            this.template_type = template_type
             wx.showLoading({
                 title: '加载中',
                 mask: true
             })
             this.triggerEvent('handleAssetsLoaded', {
                 handleAssetsLoaded: false,
-            },{
+            }, {
                 composed: true,
                 capturePhase: false,
                 bubbles: true
@@ -125,12 +130,14 @@ Component({
                 })
                 this.camera.addComponent(this.XR.CameraOrbitControl, {});
             }
-          
-            this.i = 1
+
+            this.i = 2
             this.list = list
             // const list = this.list = await xrframe.concatArrayToObjects(p_ar, true)
             if (list.length === 0) return
             const promiseList = []
+            await xrframe.loadENVObject(this.scene, this)
+
             for (const obj of list) {
                 if (obj.type === 'text') {
                     const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow, true, this)
@@ -157,13 +164,13 @@ Component({
             await Promise.all(promiseList).then(async results => {
                 this.data.Assetsloaded = true
                 if (template_type !== "模版四") {
-                    await xrframe.handleShadowRotate(this,template_type)
+                    await xrframe.handleShadowRotate(this, template_type)
                 }
                 await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
                 await xrframe.startAnimatorAndVideo(this)
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
-                },{
+                }, {
                     composed: true,
                     capturePhase: false,
                     bubbles: true

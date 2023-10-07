@@ -24,8 +24,6 @@ Page({
         value2: '',
         value3: '',
         value4: '',
-        textListRaw: {},
-        screenListRaw: {}
     },
     async onLoad() {
         const {

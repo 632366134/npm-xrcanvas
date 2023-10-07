@@ -191,7 +191,7 @@ export const recognizeCigarette = (scene, that = null) => {
                     return resolve(recognizedResult.result);
                 } else {
                     wx.showToast({
-                        title: '规格匹配失败',
+                        title: '请扫描对应规格烟盒',
                         duration: 1000,
                         icon: 'none'
                     })
@@ -203,7 +203,7 @@ export const recognizeCigarette = (scene, that = null) => {
                 return resolve(await recognizeCigarette(scene))
             } else if (!!!result.p_ar && !!result.sku) {
                 wx.showToast({
-                    title: '暂无ar效果',
+                    title: '规格暂无AR效果',
                     duration: 1000,
                     icon: 'none'
                 })
@@ -275,10 +275,44 @@ export const concatArrayToObjects = (result, showModel) => {
         console.error('3D素材数据处理错误: ', err);
     }
 }
+export const loadENVObject = async (scene, that) => {
+    try {
+        let {
+            value: envData
+        } = await scene.assets.loadAsset({
+            type: 'env-data',
+            assetId: 'env1',
+            src: "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/env/data.json"
+        });
+        if (!scene) return;
+        const node = scene.createElement(XRFrameSystem.XREnv);
+        that.scene.addChild(node)
+        if (!node) return;
+        node.setId('env')
+
+        node.getComponent(XRFrameSystem.Env).setData({
+            envData: envData,
+        });
+
+        if (!node) return;
+        that.triggerEvent('handleAssetsProgress', {
+            index: 1,
+            length: that.list.length + 1
+        }, {
+            composed: true,
+            capturePhase: false,
+            bubbles: true
+        })
+        return;
+    } catch (err) {
+        console.error('XR-FRAME env环境数据加载错误: ', err);
+    }
+}
 
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('gltf', modelData.uid);
+
         if (!modelData.file_url) throw '无资源URL';
         let model = await scene.assets.loadAsset({
             type: 'gltf',
@@ -318,6 +352,8 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
 export const loadVideoObject = async (scene, videoData, videoList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('video-texture', videoData.uid);
+        await scene.assets.releaseAsset('material', `material-${imageData.uid}`);
+
         if (!videoData.file_url) throw '无资源URL';
         let video = await scene.createVideoTexture({
             src: videoData.file_url,
@@ -358,6 +394,8 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
 export const loadImageObject = async (scene, imageData, markerShadow, textList, that) => {
     try {
         await scene.assets.releaseAsset('texture', imageData.uid);
+        await scene.assets.releaseAsset('material', `material-${imageData.uid}`);
+
         if (!imageData.file_url) throw '无资源URL';
         if (imageData.type === "image") {
             const {
@@ -422,11 +460,13 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             that.textList.splice(imageData.location, 0, {
                 node: node,
                 '3d_info': imageData['3d_info'],
+                uid: imageData.uid
             })
         } else {
             that.textList.push({
                 node: node,
                 '3d_info': imageData['3d_info'],
+                uid: imageData.uid
             });
         }
 
@@ -490,16 +530,28 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
 
         if (!textList) return
         // if (!imageData.hasOwnProperty("text")) return
+        textList.forEacth((obj, index) => {
+            if (obj.uid === imageData.uid) {
+                that.textList.splice(index, 1, {
+                    node: node,
+                    '3d_info': imageData['3d_info'],
+                    uid: imageData.uid
+                })
+                return
+            }
+        })
         if (!isNaN(imageData.location)) {
 
             that.textList.splice(imageData.location, 0, {
                 node: node,
                 '3d_info': imageData['3d_info'],
+                uid: imageData.uid
             })
         } else {
             that.textList.push({
                 node: node,
                 '3d_info': imageData['3d_info'],
+                uid: imageData.uid
             });
         }
 
@@ -536,7 +588,7 @@ export const addObjectToShadow = (markerShadow, node, threeD, isPlane, that) => 
             transform.position.setValue(threeD.position.x, threeD.position.y, threeD.position.z);
             that.triggerEvent('handleAssetsProgress', {
                 index: that.i++,
-                length: that.list.length
+                length: that.list.length + 1
             }, {
                 composed: true,
                 capturePhase: false,
@@ -764,23 +816,28 @@ export function throttle(fn, wait, that) {
     }
 }
 export const releaseAssetList = (scene, list) => {
-    console.log(scene)
-    if (list?.length !== 0) {
+    console.log(scene, list)
+    if (list?.length !== 0 && scene) {
         try {
             for (const obj of list) {
                 if (!!!obj) continue
                 if (obj.type === 'text') {
+                    scene.assets.releaseAsset('texture', obj.uid);
                     scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else if (obj.type === "model") {
                     scene.assets.releaseAsset('gltf', obj.uid);
                 } else if (obj.type === 'video') {
+                    scene.assets.releaseAsset('video-texture', obj.uid);
                     scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else if (obj.type === 'screen') {
+                    scene.assets.releaseAsset('texture', obj.uid);
                     scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else if (obj.type === 'image') {
+                    scene.assets.releaseAsset('texture', obj.uid);
                     scene.assets.releaseAsset('material', `material-${obj.uid}`);
                 } else {}
             }
+            scene.assets.releaseAsset('env-data', 'env1');
         } catch (error) {
             console.log('releaseAsset失败', error)
         }
@@ -793,6 +850,7 @@ export const removeFromScene = (n1, n2, node) => {
 
 }
 export const backgroundAudioList = {
+    '模版二': 'https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/7f788aa8c031a8996838fb1e4a6d9089.mp3',
     '模版三': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/2.mp3',
     '模版四': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/1.mp3',
 }

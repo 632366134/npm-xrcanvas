@@ -23,14 +23,6 @@ Component({
             type: Object,
             default: {}
         },
-        screenListRaw: {
-            type: Object,
-            default: {}
-        },
-        textListRaw: {
-            type: Object,
-            default: {}
-        },
         XRHeight: {
             type: Number,
             default: null
@@ -175,10 +167,10 @@ Component({
 
         },
         detached() {
-            this.setData({
-                xrShow: false,
-                loadingShow:false
-            })
+            // this.setData({
+            //     xrShow: false,
+            //     loadingShow:false
+            // })
         }
     },
     methods: {
@@ -308,6 +300,7 @@ Component({
         loadingProgress({
             detail
         }) {
+            console.log(detail,'detail')
             const {
                 index,
                 length
