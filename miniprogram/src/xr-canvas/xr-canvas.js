@@ -207,7 +207,7 @@ Component({
             }
 
         },
-        async concatAndLoadAssets(result, flag = false) {
+        async concatAndLoadAssets(result) {
             if (this.data.workflowType !== 3) {
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: false,
@@ -225,6 +225,7 @@ Component({
             const markerShadow2 = this.markerShadow2
             this.i = 2
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
+            console.log(result, list)
             if (list.length === 0) return
             const promiseList = []
             await xrframe.loadENVObject(this.scene, this)
@@ -253,61 +254,61 @@ Component({
                 } else if (obj.type === 'image') {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
                     promiseList.push(p)
+
                 }
             }
-            await Promise.all(promiseList).then(async results => {
-                this.data.Assetsloaded = true
-                this.triggerEvent('handleAssetsLoaded', {
-                    handleAssetsLoaded: true,
-                }, {
-                    composed: true,
-                    capturePhase: false,
-                    bubbles: true
-                })
+            await Promise.all(promiseList)
 
-                if (flag) return
-                if (this.active && this.data.workflowType === 3) {
-                    await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
-                    await xrframe.handleShadowRotate(this)
-                    this.handleTemplate3and4(result.template_type)
-                    this.stay_duration = result.stay_duration * 1000
-                    await this.startAnimatorAndVideo()
-                    if (this.innerAudioContext2) {
-                        this.innerAudioContext2.play()
-                        this.triggerEvent('bgcAudioFlagChange', {
-                            bgc_AudioFlag: true
-                        })
-                    }
-                    this.Transform.setData({
-                        visible: true
-                    })
-                    this.firstFlag = true
-                    return
-                }
-                await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
-
-                if (this.data.workflowType === 2) {
-                    if (result.template_type === "模版四") {
-                        await xrframe.handleShadowRotate(this)
-                    }
-                    if (this.innerAudioContext2) {
-                        this.innerAudioContext2.play()
-                        this.triggerEvent('bgcAudioFlagChange', {
-                            bgc_AudioFlag: true
-                        })
-                    }
-
-                    return
-                } else {
-                    await xrframe.handleShadowRotate(this)
-
-                }
-                this.setData({
-                    trackerFlag: true
-                })
-            }).catch(err => {
-                console.log(err)
+            this.data.Assetsloaded = true
+            this.triggerEvent('handleAssetsLoaded', {
+                handleAssetsLoaded: true,
+            }, {
+                composed: true,
+                capturePhase: false,
+                bubbles: true
             })
+
+            if (this.active && this.data.workflowType === 3) {
+                await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
+                await xrframe.handleShadowRotate(this)
+                this.handleTemplate3and4(result.template_type)
+                this.stay_duration = result.stay_duration * 1000
+                await this.startAnimatorAndVideo()
+                if (this.innerAudioContext2) {
+                    this.innerAudioContext2.play()
+                    this.triggerEvent('bgcAudioFlagChange', {
+                        bgc_AudioFlag: true
+                    })
+                }
+                this.Transform.setData({
+                    visible: true
+                })
+                this.firstFlag = true
+                return
+            }
+            await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
+
+            if (this.data.workflowType === 2) {
+                if (result.template_type === "模版四") {
+                    await xrframe.handleShadowRotate(this)
+                }
+                if (this.innerAudioContext2) {
+                    this.innerAudioContext2.play()
+                    this.triggerEvent('bgcAudioFlagChange', {
+                        bgc_AudioFlag: true
+                    })
+                }
+
+                return
+            } else {
+                await xrframe.handleShadowRotate(this)
+
+            }
+            this.setData({
+                trackerFlag: true
+            })
+
+
 
         },
         async startAnimatorAndVideo() {
@@ -365,13 +366,13 @@ Component({
                 let {
                     p_ar
                 } = await xrframe.recognizeCigarette(this.scene)
-
+                if (!!!p_ar) return
                 const {
                     front_image_url,
                     front_image_uid,
                     back_image_url,
                     back_image_uid
-                } = p_ar.cigarette
+                } = p_ar?.cigarette
                 this.setData({
                     obsList: [{
                         url: front_image_url,
@@ -413,7 +414,6 @@ Component({
 
                 } else if (p_scan) {
                     return
-                    await this.concatAndLoadAssets(p_ar, true)
                 } else if (Object.keys(p_ar).length > 0) {
                     // console.log(p_ar.template_type,'p_ar.template_type')
                     this.handleTemplate3and4(p_ar.template_type)
@@ -479,7 +479,8 @@ Component({
             let s = this.s = ({
                 y
             }) => {
-                this.Transform.position.x -= y * 0.2
+                if (Math.abs(y) < 0.01) return
+                this.Transform.position.x -= y * 0.1
             }
             await wx.startGyroscope({
                 interval: 'ui',

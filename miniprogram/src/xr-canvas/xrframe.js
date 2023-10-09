@@ -60,11 +60,14 @@ export const handleXRSupport = (that) => {
         that.setData({
             unSupport: xrSupport,
         });
+        return false
     } else {
         // if (that.data.workflowType === 2) return
         // that.setData({
         //     xrShow: true,
         // });
+        return true
+
     }
 }
 
@@ -282,7 +285,7 @@ export const loadENVObject = async (scene, that) => {
         } = await scene.assets.loadAsset({
             type: 'env-data',
             assetId: 'env1',
-            src: "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/env/data.json"
+            src: backgroundAudioList['xr-env']
         });
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XREnv);
@@ -352,7 +355,7 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
 export const loadVideoObject = async (scene, videoData, videoList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('video-texture', videoData.uid);
-        await scene.assets.releaseAsset('material', `material-${imageData.uid}`);
+        await scene.assets.releaseAsset('material', `material-${videoData.uid}`);
 
         if (!videoData.file_url) throw '无资源URL';
         let video = await scene.createVideoTexture({
@@ -377,7 +380,7 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         node.getComponent(XRFrameSystem.Mesh).setData({
             material: material,
             geometry: scene.assets.getAsset('geometry', 'plane'),
-            assetId: `material-${imageData.uid}`,
+            assetId: `material-${videoData.uid}`,
 
             // uid: videoData.uid,
         });
@@ -416,7 +419,10 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             }
         );
         material.renderQueue = 2500;
+        material.alphaCutOff = 0;
+
         material.alphaMode = "BLEND";
+        material.setRenderState('cullOn', false);
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRMesh);
         if (!node) return;
@@ -430,7 +436,6 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         });
         node.setId(imageData.uid)
         node.setAttribute('states', 'cullOn: false');
-
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
             node.event.add('touch-shape', async () => {
@@ -817,7 +822,7 @@ export function throttle(fn, wait, that) {
 }
 export const releaseAssetList = (scene, list) => {
     console.log(scene, list)
-    if (list?.length !== 0 && scene) {
+    if (list && list?.length !== 0 && scene) {
         try {
             for (const obj of list) {
                 if (!!!obj) continue
@@ -850,7 +855,8 @@ export const removeFromScene = (n1, n2, node) => {
 
 }
 export const backgroundAudioList = {
-    '模版二': 'https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/7f788aa8c031a8996838fb1e4a6d9089.mp3',
-    '模版三': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/2.mp3',
-    '模版四': 'https://oss-debug.aimall-tech.com/aimall-production-tob-anhui-ar/videos/1.mp3',
-}
+    '模版二': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/others/7f788aa8c031a8996838fb1e4a6d9089.mp3',
+    '模版三': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/others/9340d285364310ebc1eaedf8f980ad26.mp3',
+    '模版四': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/others/c206374a0b1e11c2429faf0e3c4ba7e5.mp3',
+    'xr-env': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/env/data.json'
+  }

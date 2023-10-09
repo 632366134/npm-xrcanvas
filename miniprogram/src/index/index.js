@@ -103,15 +103,14 @@ Component({
                     p_ar
                 } = this.data.p_arData
                 if (p_guide && p_scan && p_ending && p_ar && Object.keys(p_ar).length > 0) {
-                    await this.arCameraShow()
+                    if (!await this.arCameraShow()) return
                     await xrframe.getCameraAuthorize()
                     this.guideShow(p_guide)
                 } else if (p_guide) {
                     this.guideShow(p_guide, true)
                 } else if (p_scan) {
-                    await this.arCameraShow()
+                    if (!await this.arCameraShow()) return
                     await xrframe.getCameraAuthorize()
-
                     this.setData({
                         p_scanFlag: true,
                         xrShow: true
@@ -122,7 +121,8 @@ Component({
                     //     duration,
                     //     progressColor
                     // } = this.data.loadingData[p_ar.template_type]
-                    await this.arCameraShow()
+                    if (!await this.arCameraShow()) return
+
                     await xrframe.getCameraAuthorize()
                     this.setData({
                         xrShow: true,
@@ -137,16 +137,19 @@ Component({
                     throw '暂无数据'
                 }
             } else if (this.data.workflowType === 1) {
-                await this.arCameraShow()
+                if (!await this.arCameraShow()) return
+
                 await xrframe.getCameraAuthorize()
                 await this.workflow1Fun()
             } else if (this.data.workflowType === 3) {
-                await this.arCameraShow()
+                if (!await this.arCameraShow()) return
+
                 await xrframe.getCameraAuthorize()
                 await this.getWorkList()
             } else if (this.data.workflowType === 4) {
                 await xrframe.initXRFrame(this, this.data.XRWidth, this.data.XRHeight)
-                await xrframe.handleXRSupport(this)
+                // if (!await xrframe.handleXRSupport(this)) return
+
                 // let screenListRaw = this.data.p_arData.p_ar.screen_list
                 // delete this.data.p_arData.p_ar.screen_list
                 this.setData({
@@ -190,7 +193,7 @@ Component({
         },
         async arCameraShow() {
             await xrframe.initXRFrame(this)
-            await xrframe.handleXRSupport(this)
+            return await xrframe.handleXRSupport(this)
         },
         async workflow1Fun() {
             const {
@@ -209,12 +212,14 @@ Component({
                 this.setData({
                     p_scanFlag: true,
                     xrShow: true
+
                 })
             }
         },
         type3guideShow(p_guide) {
             this.setData({
                 p_guideFlag: true,
+
             })
             if (p_guide.audio_url) {
                 this.innerAudioContext = wx.createInnerAudioContext({
@@ -229,19 +234,23 @@ Component({
                 }
                 this.innerAudioContext.onEnded(list)
             }
-            let timer = setTimeout(async () => {
+            let timer = setTimeout(() => {
+                this.setData({
+                    xrShow: true
+                })
+            }, (p_guide.duration * 1000)-500);
+            timer = setTimeout(() => {
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
-                    xrShow: true
-
                 })
                 clearTimeout(timer)
             }, p_guide.duration * 1000);
         },
         guideShow(p_guide, flag = false) {
             this.setData({
-                p_guideFlag: true
+                p_guideFlag: true,
+                xrShow: !flag
             })
             if (p_guide.audio_url) {
                 this.innerAudioContext = wx.createInnerAudioContext({
@@ -263,7 +272,6 @@ Component({
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
-                    xrShow: true
                 })
                 clearTimeout(timer)
             }, p_guide.duration * 1000);
@@ -297,10 +305,11 @@ Component({
             }
 
         },
+        
         loadingProgress({
             detail
         }) {
-            console.log(detail,'detail')
+            console.log(detail, 'detail')
             const {
                 index,
                 length
@@ -341,6 +350,7 @@ Component({
         showInteractMedia({
             detail
         }) {
+            console.log('showInteractMediashowInteractMedia')
             if (this.data.eventFlag) return
             const {
                 image_url,
@@ -361,6 +371,7 @@ Component({
 
         },
         eventFlagChange() {
+            console.log('eventFlagChangeeventFlagChange')
             this.setData({
                 eventFlag: false,
                 event_image: '',

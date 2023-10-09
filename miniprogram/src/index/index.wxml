@@ -13,21 +13,22 @@
         <image class="p_loading_image" src="{{image_url}}" mode="aspectFit" />
         <text>AR场景元素加载中...</text>
         <view class="progress-box">
-            <progress active-mode="forwards" active stroke-width="8" border-radius="20" activeColor="{{progressColor}}" backgroundColor="#999" percent="{{percent}}" />
+            <progress  active-mode="forwards" active stroke-width="8" border-radius="20" activeColor="{{progressColor}}" backgroundColor="#999" percent="{{percent}}" />
+            <view class="waitText">预计等待时间{{textDuration}}秒...</view>
+
         </view>
-        <view class="waitText">预计等待时间{{textDuration}}秒...</view>
 
     </view>
     <view class="p_ending2" wx:if="{{p_endingFlag}}">
         <import src="../wxParse/wxParse.wxml" />
         <template is="wxParse" data="{{wxParseData:article.nodes}}" />
     </view>
-    <view class="p_ending" wx:if="{{eventFlag}}">
+    <view  class="p_ending" wx:if="{{eventFlag}}">
         <image class="p_EVENT_image" wx:if="{{event_image}}" src="{{event_image}}" mode="aspectFit" />
         <view class="p_EVENT_video_border" wx:if="{{event_url}}">
             <video controls="{{true}}" autoplay class="p_EVENT_video" src="{{event_url}}" />
         </view>
-        <button class="closeBtn" bind:tap="eventFlagChange">关闭</button>
+        <button  class="closeBtn"  catch:tap="eventFlagChange">关闭</button>
     </view>
     <view class="bgc_Audio" wx:if="{{bgc_AudioFlag}}" bind:tap="bgcMusicChange">
         <image class="bgc_Audio_image" src="{{soundFlag ?'../assets/on.png':'../assets/off.png'}}" mode="aspectFit" />
