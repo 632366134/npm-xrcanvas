@@ -1,4 +1,4 @@
-// pages/userCreate/index.ts
+// packageA/pages/cat.js
 Page({
 
     /**
@@ -11,7 +11,7 @@ Page({
     /**
      * 生命周期函数--监听页面加载
      */
-    onLoad() {
+    onLoad(options) {
 
     },
 

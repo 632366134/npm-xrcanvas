@@ -173,12 +173,12 @@ Page({
     },
     async setDefaultObjectsData() {
         const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
-        const result = this.result = await node2.concatArrayToObjects(this.data.p_arData.p_ar, true)
-        console.log(result, 'resultresultresult')
+        const result = this.result = await node2.concatArrayToObjects(this.data.p_arData, true)
         await this.node2.setDefaultObjectsData(this.result, this.data.p_arData.p_ar.template_type)
 
     },
     async captureCreatingScene() {
+        this.resetPosition()
         const url = await this.node2.saveSceneAsImage()
         this.setData({
             url
@@ -200,7 +200,12 @@ Page({
     loadingProgress(e) {
         console.log(e, 'loadingProgressloadingProgress')
     },
-    handleAssetsLoaded({detail}) {
-        console.log(detail.handleAssetsLoaded,'handleAssetsLoadedhandleAssetsLoaded')
+    handleAssetsLoaded({
+        detail
+    }) {
+        console.log(detail.handleAssetsLoaded, 'handleAssetsLoadedhandleAssetsLoaded')
+    },
+    hideChildVisible() {
+         this.node2.hideChildVisible(uid)
     }
 })

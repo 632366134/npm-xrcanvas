@@ -419,7 +419,6 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             }
         );
         material.renderQueue = 2500;
-        material.alphaCutOff = 0;
 
         material.alphaMode = "BLEND";
         material.setRenderState('cullOn', false);
@@ -438,7 +437,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         node.setAttribute('states', 'cullOn: false');
         if (imageData.event) {
             node.setAttribute('cube-shape', 'true');
-            node.event.add('touch-shape', async () => {
+            const shape = async (e) => {
                 if (that.data.workflowType === 3 && !that.firstFlag) return
                 that.triggerEvent('showInteractMedia', imageData.event, {
                     composed: true,
@@ -451,7 +450,8 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
                 that.triggerEvent('bgcMusicClose', {});
                 await that.StayPageShow()
 
-            });
+            }
+            node.event.addOnce('touch-shape', shape);
         }
         if (!markerShadow || !node) return;
 
@@ -657,7 +657,26 @@ export const startAnimatorAndVideo = async (that) => {
         console.error('XR-FRAME: 场景动画开始错误: ', err);
     }
 }
+export const pauseAnimatorAndVideo = (that) => {
+    try {
+        for (let animator of that.animatorList) {
+            animator.animator.pauseToFrame(animator.name, 0.99);
+        }
 
+    } catch (err) {
+        console.error('XR-FRAME: 场景快进错误: ', err);
+    }
+}
+export const resumeAnimatorAndVideo = (that) => {
+    try {
+        for (let animator of that.animatorList) {
+            animator.animator.resume();
+        }
+
+    } catch (err) {
+        console.error('XR-FRAME: 场景恢复错误: ', err);
+    }
+}
 export const stopAnimatorAndVideo = async (that, release) => {
     try {
         for (let animator of that.animatorList) {
@@ -681,21 +700,22 @@ export const handleShadowRotate = (that, type = undefined) => {
             if (event.touches.length !== 1) return;
             that.setData({
                 touch: {
-                    clientX: event.touches[0].clientX,
-                    clientY: event.touches[0].clientY,
+                    pageX: event.touches[0].pageX,
+                    pageY: event.touches[0].pageY,
                 }
             });
             that.scene.event.add('touchmove', that.handleTouchMove.bind(that));
             that.scene.event.addOnce('touchend', that.handleTouchEnd.bind(that));
         }
         that.handleTouchMove = (event) => {
+
             if (event.touches.length !== 1) return;
-            const xMove = event.touches[0].clientX - that.data.touch.clientX;
-            const yMove = event.touches[0].clientY - that.data.touch.clientY;
+            const xMove = event.touches[0].pageX - that.data.touch.pageX;
+            const yMove = event.touches[0].pageY - that.data.touch.pageY;
             that.setData({
                 touch: {
-                    clientX: event.touches[0].clientX,
-                    clientY: event.touches[0].clientY,
+                    pageX: event.touches[0].pageX,
+                    pageY: event.touches[0].pageY,
                 }
             });
             if (that.data.workflowType === 2 && type === "模版四") {
@@ -735,7 +755,7 @@ export const shadowRotateY = (deltaX, markerShadow) => {
 }
 export const shadowPositionY = (deltaY, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
-    transform.position.y += deltaY / 100;
+    transform.position.z += deltaY / 100;
 }
 export const shadowPositionX = (deltaX, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
@@ -744,11 +764,10 @@ export const shadowPositionX = (deltaX, markerShadow) => {
 export const resetPosition = (markerShadow, type) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     if (type === '模版四') {
-        transform.position.setValue(0, 0, -5)
-
+        transform.position.setArray(cameraPosition['模版四'])
+        transform.rotation.setValue(0, 0, 0)
     } else {
         transform.position.setValue(0, 0, 0)
-        transform.rotation.setValue(90 * (Math.PI / 180), 180 * (Math.PI / 180), 0)
 
     }
 
@@ -859,4 +878,16 @@ export const backgroundAudioList = {
     '模版三': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/others/9340d285364310ebc1eaedf8f980ad26.mp3',
     '模版四': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/others/c206374a0b1e11c2429faf0e3c4ba7e5.mp3',
     'xr-env': 'https://ar.ahzyssl.com/aimall-production-tob-anhui-ar/env/data.json'
-  }
+}
+export const targetPosition = {
+    '模版一': [0.1, 0, 0],
+    '模版二': [0, 0, 0],
+    '模版三': [0, 0, -0.13],
+    '模版四': [0, 0.5, 0],
+}
+export const cameraPosition = {
+    '模版一': [0.1, 2.7, 0.01],
+    '模版二': [0, 3.2, 0.01],
+    '模版三': [0, 2.7, -0.12],
+    '模版四': [0, 1.9, 2],
+}

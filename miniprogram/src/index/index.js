@@ -238,7 +238,7 @@ Component({
                 this.setData({
                     xrShow: true
                 })
-            }, (p_guide.duration * 1000)-500);
+            }, (p_guide.duration * 1000) - 500);
             timer = setTimeout(() => {
                 this.setData({
                     p_guideFlag: false,
@@ -305,7 +305,7 @@ Component({
             }
 
         },
-        
+
         loadingProgress({
             detail
         }) {
@@ -351,7 +351,7 @@ Component({
             detail
         }) {
             console.log('showInteractMediashowInteractMedia')
-            if (this.data.eventFlag) return
+
             const {
                 image_url,
                 video_url
@@ -372,6 +372,7 @@ Component({
         },
         eventFlagChange() {
             console.log('eventFlagChangeeventFlagChange')
+            this.eventFlagBtn = true
             this.setData({
                 eventFlag: false,
                 event_image: '',
@@ -407,6 +408,10 @@ Component({
             this.setData({
                 soundFlag: false
             })
-        }
+        },
+        move() {
+
+        },
+        catchtap() {}
     }
 })

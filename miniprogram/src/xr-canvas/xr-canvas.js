@@ -32,13 +32,13 @@ Component({
         }
     },
     observers: {
-        p_scanFlag(newVal) {
-            if (newVal && this.data.workflowType === 3) {
-                this.setData({
-                    trackerFlag: true
-                })
-            }
-        }
+        // p_scanFlag(newVal) {
+        //     if (newVal && this.data.workflowType === 3) {
+        //         this.setData({
+        //             trackerFlag: true
+        //         })
+        //     }
+        // }
     },
 
     data: {
@@ -52,7 +52,10 @@ Component({
         obsList: [],
         position: [],
         rotation: [],
-        Assetsloaded: false
+        Assetsloaded: false,
+        trackerFlag: false,
+      
+
     },
     lifetimes: {
         async attached() {
@@ -160,16 +163,18 @@ Component({
                                     bgc_AudioFlag: true
                                 })
                             }
+                            await xrframe.addTemplateTextAnimator(this.data.p_arData.p_ar.template_type, this.scene, this)
+
                         }
-                        await xrframe.addTemplateTextAnimator(this.data.p_arData.p_ar.template_type, this.scene, this)
-                        await this.startAnimatorAndVideo()
                         this.Transform.setData({
                             visible: true
                         })
+                        await this.startAnimatorAndVideo()
+
                         this.firstFlag = true
                     } else {
                         this.triggerEvent('handleAssetsLoaded', {
-                            handleAssetsLoaded: true,
+                            handleAssetsLoaded: false,
                             type: this.data.p_arData.p_ar.template_type
                         }, {
                             composed: true,
@@ -464,8 +469,13 @@ Component({
                 }
 
                 // this.stay_duration = p_ar.stay_duration * 1000
+                let obslist1 = obsList.filter(v => {
+                    return typeof v.url !== 'undefined' && v.url !== null
+                })
+                console.log(obslist1)
                 this.setData({
-                    obsList,
+                    obsList: obslist1,
+                    trackerFlag: true
                 })
                 await this.concatAndLoadAssets(this.data.p_arData.p_ar)
                 // this.handleTemplate3and4(p_ar.template_type)

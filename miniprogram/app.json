@@ -5,8 +5,7 @@
         "pages/workflow1/index",
         "pages/workflow2/index",
         "pages/workflow3/index",
-        "pages/workflow4/index",
-        "pages/userCreate/index"
+        "pages/workflow4/index"
     ],
     "tabBar": {
         "custom": false,

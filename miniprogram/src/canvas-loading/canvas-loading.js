@@ -15,57 +15,7 @@ Component({
 
     },
     observers: {
-        // async textListRaw(newVal) {
-        //     console.log(newVal)
-        //     if (Object.keys(newVal).length === 0) return
-        //     await xrframe.replaceMaterial(this.scene, newVal, undefined, undefined, this)
-        //     // if (!this.scene) {
-        //     //     oldVal = newVal
-        //     //     this.loaded = false
-        //     //     return
-        //     // } else {
-        //     //     this.loaded = true
-        //     //     if (oldVal !== []) {
-        //     //         const r = newVal.filter(obj1 => !oldVal.some(obj2 => obj2.text === obj1.text));
-        //     //         r.forEach(v => {
-        //     //             this.markerShadow.removeChild(this.scene.getElementById(v.file_uid))
-        //     //         })
-        //     //         this.typeOneLoading(r)
-        //     //         oldVal = newVal
-        //     //     } else {
-        //     //         this.typeOneLoading(newVal)
-        //     //         oldVal = newVal
-        //     //     }
 
-        //     // }
-
-        // },
-        // async screenListRaw(newVal) {
-        //     console.log(newVal)
-
-        //     if (Object.keys(newVal).length === 0) return
-        //     await xrframe.replaceMaterial(this.scene, newVal, undefined, this.textList, this)
-        //     // if (!this.scene) {
-        //     //     oldVal = newVal
-        //     //     this.loaded = false
-        //     //     return
-        //     // } else {
-        //     //     this.loaded = true
-        //     //     if (oldVal !== []) {
-        //     //         const r = newVal.filter(obj1 => !oldVal.some(obj2 => obj2.file_url === obj1.file_url));
-        //     //         r.forEach(v => {
-        //     //             this.markerShadow.removeChild(this.scene.getElementById(v.file_uid))
-        //     //         })
-        //     //         this.typeOneLoading(r)
-        //     //         oldVal = newVal
-        //     //     } else {
-        //     //         this.typeOneLoading(newVal)
-        //     //         oldVal = newVal
-        //     //     }
-
-        //     // }
-
-        // }
     },
 
     /**
@@ -74,7 +24,14 @@ Component({
     data: {
         readyFlag: true,
         Assetsloaded: false,
-        targetFlag: false
+        targetFlag: false,
+        touch: {
+            pageX: 0,
+            pageY: 0
+        },
+        cameraPosition: [0, 0, -5],
+        targetPosition: [0, 0, 0]
+
     },
     lifetimes: {
 
@@ -106,7 +63,9 @@ Component({
     methods: {
         async replaceMaterial(data) {
             await xrframe.replaceMaterial(this.scene, data, undefined, undefined, this)
-            await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
+            if (this.template_type === "模版二") {
+                await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
+            }
             await xrframe.stopAnimatorAndVideo(this, false)
             await xrframe.startAnimatorAndVideo(this)
         },
@@ -116,6 +75,15 @@ Component({
                 title: '加载中',
                 mask: true
             })
+            if (template_type === '模版四') {
+                this.camera.addComponent(this.XR.CameraOrbitControl, {});
+            }
+            this.setData({
+                cameraPosition: xrframe.cameraPosition[template_type],
+                targetPosition: xrframe.targetPosition[template_type]
+            })
+
+
             this.triggerEvent('handleAssetsLoaded', {
                 handleAssetsLoaded: false,
             }, {
@@ -123,13 +91,13 @@ Component({
                 capturePhase: false,
                 bubbles: true
             })
-            if (template_type === "模版四") {
-                this.markerShadow.getComponent(this.XR.Transform).rotation.x = 30 * (Math.PI / 180)
-                this.camera.getComponent(this.XR.Camera).setData({
-                    target: this.markerShadow.getComponent(this.XR.Transform)
-                })
-                this.camera.addComponent(this.XR.CameraOrbitControl, {});
-            }
+            // if (template_type === "模版四") {
+            //     this.markerShadow.getComponent(this.XR.Transform).rotation.x = 30 * (Math.PI / 180)
+            //     this.camera.getComponent(this.XR.Camera).setData({
+            //         target: this.markerShadow.getComponent(this.XR.Transform)
+            //     })
+            //     this.camera.addComponent(this.XR.CameraOrbitControl, {});
+            // }
 
             this.i = 2
             this.list = list
@@ -166,7 +134,9 @@ Component({
                 if (template_type !== "模版四") {
                     await xrframe.handleShadowRotate(this, template_type)
                 }
-                await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
+                if (template_type === "模版二") {
+                    await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
+                }
                 await xrframe.startAnimatorAndVideo(this)
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
@@ -179,7 +149,9 @@ Component({
 
             })
         },
-        async concatArrayToObjects(p_ar, flag) {
+        async concatArrayToObjects({
+            p_ar
+        }, flag) {
             return await xrframe.concatArrayToObjects(p_ar, flag)
         },
         async handleReady({
@@ -202,7 +174,10 @@ Component({
             xrframe.removeFromScene(this.markerShadow, this.markerShadow2, this.scene.getElementById(uid))
         },
         async saveSceneAsImage() {
-            return await xrframe.saveSceneAsImage(this.scene)
+            xrframe.pauseAnimatorAndVideo(this)
+            const result = await xrframe.saveSceneAsImage(this.scene)
+            await xrframe.resumeAnimatorAndVideo(this)
+            return result
         },
         resetPosition(type) {
             if (type === "模版四") {
@@ -212,6 +187,12 @@ Component({
                 xrframe.resetPosition(this.markerShadow, type)
 
             }
+        },
+        hideChildVisible(uid) {
+            const element = this.scene.getElementById(uid).getComponent(this.XR.Transform)
+            element.setData({
+                visible: false
+            })
         }
     },
 
