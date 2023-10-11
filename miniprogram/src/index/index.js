@@ -215,6 +215,7 @@ Component({
 
                 })
             }
+            
         },
         type3guideShow(p_guide) {
             this.setData({
@@ -351,7 +352,7 @@ Component({
             detail
         }) {
             console.log('showInteractMediashowInteractMedia')
-
+            if (this.data.eventFlag) return
             const {
                 image_url,
                 video_url
@@ -371,13 +372,17 @@ Component({
 
         },
         eventFlagChange() {
+            const time = setTimeout(() => {
             console.log('eventFlagChangeeventFlagChange')
-            this.eventFlagBtn = true
-            this.setData({
-                eventFlag: false,
-                event_image: '',
-                event_url: ''
-            })
+
+                this.setData({
+                    eventFlag: false,
+                    event_image: '',
+                    event_url: ''
+                })
+                clearTimeout(time)
+            }, 50);
+
         },
         bgcAudioFlagChange({
             detail

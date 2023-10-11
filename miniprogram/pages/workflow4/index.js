@@ -3,8 +3,7 @@ import {
     getskuTemplatesList
 } from '../../src/xr-canvas/utils'
 import * as xrframe from '../../src/xr-canvas/xrframe'
-let i = 0
-let d = 0
+
 Page({
     data: {
         workflowType: 4,
@@ -35,6 +34,10 @@ Page({
             list: result.skus
         })
 
+    },
+    onShow() {
+        this.i = 0
+        this.d = 0
     },
     onUnload() {
 
@@ -169,7 +172,9 @@ Page({
     removeFromScene(uid) {
         if (this.result.length === 0) return
         console.log(this.result)
-        this.node2.removeFromScene(this.result[i++].uid)
+        // this.node2.removeFromScene(this.result[this.i++].uid)
+        this.node2.hideChildVisible(this.result[this.i++].uid)
+
     },
     async setDefaultObjectsData() {
         const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
@@ -191,9 +196,11 @@ Page({
         this.drawCanvas(this.text, this.index)
     },
     async addToScene() {
-        let data = this.result[d++]
+        let data = this.result[this.d++]
+        
+ 
         if (data) {
-            await this.node2.setDefaultObjectsData([data], this.data.p_arData.p_ar.template_type)
+            await this.node2.addToScene([data], this.data.p_arData.p_ar.template_type)
         }
 
     },
@@ -206,6 +213,6 @@ Page({
         console.log(detail.handleAssetsLoaded, 'handleAssetsLoadedhandleAssetsLoaded')
     },
     hideChildVisible() {
-         this.node2.hideChildVisible(uid)
+        this.node2.hideChildVisible(uid)
     }
 })

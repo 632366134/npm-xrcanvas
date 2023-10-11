@@ -23,7 +23,7 @@
         <import src="../wxParse/wxParse.wxml" />
         <template is="wxParse" data="{{wxParseData:article.nodes}}" />
     </view>
-    <view catchtap class="p_ending" wx:if="{{eventFlag}}">
+    <view  class="p_ending" wx:if="{{eventFlag}}">
         <image class="p_EVENT_image" wx:if="{{event_image}}" src="{{event_image}}" mode="aspectFit" />
         <view class="p_EVENT_video_border" wx:if="{{event_url}}">
             <video controls="{{true}}" autoplay class="p_EVENT_video" src="{{event_url}}" />

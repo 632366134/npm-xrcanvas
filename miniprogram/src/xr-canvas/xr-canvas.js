@@ -9,7 +9,6 @@ import * as xrframe from './xrframe'
 import {
     getArList
 } from './utils'
-let flag
 
 Component({
     properties: {
@@ -54,7 +53,7 @@ Component({
         rotation: [],
         Assetsloaded: false,
         trackerFlag: false,
-      
+
 
     },
     lifetimes: {
@@ -128,7 +127,6 @@ Component({
         async handleTrackerSwitch({
             detail
         }) {
-            let timer
             const active = detail.value;
             const element = detail.el;
             this.triggerEvent('handleTrackerSwitch', {
@@ -146,12 +144,9 @@ Component({
                             p_ar
                         } = await xrframe.recognizeCigarette(this.scene, this)
                     }
-
                     if (this.data.Assetsloaded) {
-
-
                         if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
-                            await this.StayPageShow(timer)
+                            await this.StayPageShow()
                         }
                         if (!this.firstFlag) {
                             await xrframe.handleShadowRotate(this)
@@ -173,6 +168,7 @@ Component({
 
                         this.firstFlag = true
                     } else {
+
                         this.triggerEvent('handleAssetsLoaded', {
                             handleAssetsLoaded: false,
                             type: this.data.p_arData.p_ar.template_type
@@ -185,26 +181,40 @@ Component({
 
                     this.loading = true
                 } else {
-                    this.Transform.setData({
-                        visible: true
-                    })
-                    if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
-                        await this.StayPageShow(timer)
-                    }
-                    if (flag) return
-                    await this.startAnimatorAndVideo()
-                    if (this.innerAudioContext2) {
-                        this.innerAudioContext2.play()
-                        this.triggerEvent('bgcAudioFlagChange', {
-                            bgc_AudioFlag: true
+                    if (!this.firstFlag) {
+                        if (!this.data.Assetsloaded) return
+                        await xrframe.handleShadowRotate(this)
+                        this.handleTemplate3and4(this.result.template_type)
+                        // this.stay_duration = this.data.p_arData.p_ar.stay_duration * 1000
+                        await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+
+                        await this.startAnimatorAndVideo()
+                        if (this.innerAudioContext2) {
+                            this.innerAudioContext2.play()
+                            this.triggerEvent('bgcAudioFlagChange', {
+                                bgc_AudioFlag: true
+                            })
+                        }
+                        if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
+                            await this.StayPageShow()
+                        }
+
+                        this.firstFlag = true
+                        this.Transform.setData({
+                            visible: true
+                        })
+
+                    } else {
+                        this.Transform.setData({
+                            visible: true
                         })
                     }
-                    flag = true
+
                 }
 
             } else {
                 this.active = false
-                clearTimeout(timer)
+                clearTimeout(this.timer)
                 this.Transform.setData({
                     visible: false
                 })
@@ -229,6 +239,7 @@ Component({
             const markerShadow = this.markerShadow
             const markerShadow2 = this.markerShadow2
             this.i = 2
+            this.result = result
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
             console.log(result, list)
             if (list.length === 0) return
@@ -246,12 +257,9 @@ Component({
                 } else if (obj.type === 'video') {
                     const p = xrframe.loadVideoObject(this.scene, obj, true, markerShadow, this)
 
-                } else if (obj.type === 'screen' && result.template_type === "模版四" && this.data.workflowType === 2) {
+                } else if (obj.type === 'screen' && result.template_type === "模版四" && this.data.workflowType !== 4) {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow2, true, this)
 
-                    promiseList.push(p)
-                } else if (obj.type === 'screen' && result.template_type === "模版四" && this.data.workflowType === 3) {
-                    const p = xrframe.loadImageObject(this.scene, obj, markerShadow2, true, this)
                     promiseList.push(p)
                 } else if (obj.type === 'screen') {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
@@ -272,13 +280,12 @@ Component({
                 capturePhase: false,
                 bubbles: true
             })
+            await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
             if (this.active && this.data.workflowType === 3) {
-                await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
                 await xrframe.handleShadowRotate(this)
                 this.handleTemplate3and4(result.template_type)
                 this.stay_duration = result.stay_duration * 1000
-                await this.startAnimatorAndVideo()
                 if (this.innerAudioContext2) {
                     this.innerAudioContext2.play()
                     this.triggerEvent('bgcAudioFlagChange', {
@@ -289,25 +296,52 @@ Component({
                     visible: true
                 })
                 this.firstFlag = true
+                await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                this.startAnimatorAndVideo()
+
                 return
             }
-            await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
-            if (this.data.workflowType === 2) {
-                if (result.template_type === "模版四") {
-                    await xrframe.handleShadowRotate(this)
-                }
+            if (this.active && this.data.workflowType === 1) {
+                await xrframe.handleShadowRotate(this)
+                this.handleTemplate3and4(result.template_type)
+                this.stay_duration = result.stay_duration * 1000
                 if (this.innerAudioContext2) {
                     this.innerAudioContext2.play()
                     this.triggerEvent('bgcAudioFlagChange', {
                         bgc_AudioFlag: true
                     })
                 }
+                if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
+                    await this.StayPageShow()
+                }
+                this.Transform.setData({
+                    visible: true
+                })
+                await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                this.startAnimatorAndVideo()
+
+                this.firstFlag = true
+            }
+
+
+            if (this.data.workflowType === 2) {
+                if (result.template_type === "模版四") {
+                    await xrframe.handleShadowRotate(this)
+                }
+                this.handleTemplate3and4(result.template_type)
+
+                if (this.innerAudioContext2) {
+                    this.innerAudioContext2.play()
+                    this.triggerEvent('bgcAudioFlagChange', {
+                        bgc_AudioFlag: true
+                    })
+                }
+                await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                console.log(this.videoList,'videolist')
+                this.startAnimatorAndVideo()
 
                 return
-            } else {
-                await xrframe.handleShadowRotate(this)
-
             }
             this.setData({
                 trackerFlag: true
@@ -316,14 +350,14 @@ Component({
 
 
         },
-        async startAnimatorAndVideo() {
-            await xrframe.startAnimatorAndVideo(this)
+        startAnimatorAndVideo() {
+            xrframe.startAnimatorAndVideo(this)
         },
         async stopAnimatorAndVideo() {
             await xrframe.stopAnimatorAndVideo(this, true)
         },
 
-        async StayPageShow(timer) {
+        async StayPageShow() {
             if (this.stay_duration) {
                 this.timer = setTimeout(() => {
                     this.triggerEvent('stayPage', {}, {
@@ -365,7 +399,9 @@ Component({
             const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
             const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
             this.Transform = this.markerShadow.getComponent(this.xrFrameSystem.Transform)
-
+            this.Transform.setData({
+                visible: false
+            })
             if (this.data.workflowType === 1) {
 
                 let {
@@ -378,17 +414,24 @@ Component({
                     back_image_url,
                     back_image_uid
                 } = p_ar?.cigarette
-                this.setData({
-                    obsList: [{
-                        url: front_image_url,
-                        id: front_image_uid
-                    }, {
-                        url: back_image_url,
-                        id: back_image_uid
-                    }]
+                let obsList = [{
+                    url: front_image_url,
+                    id: front_image_uid
+                }, {
+                    url: back_image_url,
+                    id: back_image_uid
+                }]
+                let obslist1 = obsList.filter(v => {
+                    return typeof v.url !== 'undefined' && v.url !== null
                 })
+                console.log(obslist1)
+                this.setData({
+                    obsList: obslist1,
+                    trackerFlag: true
+                })
+
                 this.stay_duration = p_ar.stay_duration * 1000
-                this.handleTemplate3and4(p_ar.template_type)
+                // this.handleTemplate3and4(p_ar.template_type)
                 await this.concatAndLoadAssets(p_ar)
             } else if (this.data.workflowType === 2) {
 
@@ -409,9 +452,8 @@ Component({
                             visible: true
                         })
                         await this.startAnimatorAndVideo()
-                        let timer
                         if (p_ending && p_ending.text) {
-                            await this.StayPageShow(timer)
+                            await this.StayPageShow()
                         }
                         await this.gyroscope(p_ar)
                         clearTimeout(timer2)

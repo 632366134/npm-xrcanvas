@@ -1,1 +1,1 @@
-<npm-xrframe wx:if="{{flag}}" class="npm-xrframe" id="npm-xrframe" workflowData="{{workflowData}}" workflowType="{{workflowType}}" p_arData="{{p_arData}}" bind:handleTrackerSwitch="handleTrackerSwitch"bind:handleARReady="handleARReady" bind:stayPage="stayPage"></npm-xrframe>
+<npm-xrframe  wx:if="{{flag}}" class="npm-xrframe" id="npm-xrframe" workflowData="{{workflowData}}" workflowType="{{workflowType}}" p_arData="{{p_arData}}" bind:handleTrackerSwitch="handleTrackerSwitch"bind:handleARReady="handleARReady" bind:stayPage="stayPage"></npm-xrframe>

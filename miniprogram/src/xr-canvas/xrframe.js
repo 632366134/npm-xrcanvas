@@ -401,6 +401,8 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
 
         if (!imageData.file_url) throw '无资源URL';
         if (imageData.type === "image") {
+            console.log('type=image!!')
+
             const {
                 rotation
             } = imageData['3d_info'];
@@ -421,7 +423,6 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         material.renderQueue = 2500;
 
         material.alphaMode = "BLEND";
-        material.setRenderState('cullOn', false);
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRMesh);
         if (!node) return;
@@ -451,7 +452,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
                 await that.StayPageShow()
 
             }
-            node.event.addOnce('touch-shape', shape);
+            node.event.add('touch-shape', shape);
         }
         if (!markerShadow || !node) return;
 
@@ -459,14 +460,18 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
 
         if (!textList) return
-        // if (!imageData.hasOwnProperty("text")) return
+        if (that.result.template_type === "模版一" && imageData.hasOwnProperty("location") && imageData.location === "right") return
         if (!isNaN(imageData.location)) {
-
-            that.textList.splice(imageData.location, 0, {
-                node: node,
+            that.textList[imageData.location] = {
+                node,
                 '3d_info': imageData['3d_info'],
                 uid: imageData.uid
-            })
+            }
+            // that.textList.splice(imageData.location, 0, {
+            //     node: node,
+            //     '3d_info': imageData['3d_info'],
+            //     uid: imageData.uid
+            // })
         } else {
             that.textList.push({
                 node: node,
@@ -484,6 +489,13 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
     try {
         await scene.assets.releaseAsset('texture', imageData.uid);
         if (!imageData.file_url) throw '无资源URL';
+        if (imageData.type === "image") {
+            console.log('type=image!!')
+            const {
+                rotation
+            } = imageData['3d_info'];
+            [rotation.y, rotation.z] = [rotation.z, rotation.y];
+        }
         let image = await scene.assets.loadAsset({
             type: 'texture',
             assetId: imageData.uid,
@@ -535,6 +547,8 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
 
         if (!textList) return
         // if (!imageData.hasOwnProperty("text")) return
+        if (imageData.hasOwnProperty("location") && imageData.location === "right") return
+
         textList.forEacth((obj, index) => {
             if (obj.uid === imageData.uid) {
                 that.textList.splice(index, 1, {
@@ -614,6 +628,10 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
             await handleTemplate4KeyFrame(that)
             return
         }
+        if (that.data.workflowType === 2) {
+            await handleTemplate4KeyFrame(that)
+
+        }
         for (let [index, item] of that.textList.entries()) {
             let animator = item.node.addComponent(XRFrameSystem.Animator);
 
@@ -642,7 +660,7 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
     }
 }
 
-export const startAnimatorAndVideo = async (that) => {
+export const startAnimatorAndVideo = (that) => {
     try {
         for (let animator of that.animatorList) {
             animator.animator.play(animator.name);
@@ -657,11 +675,18 @@ export const startAnimatorAndVideo = async (that) => {
         console.error('XR-FRAME: 场景动画开始错误: ', err);
     }
 }
-export const pauseAnimatorAndVideo = (that) => {
+export const pauseAnimatorAndVideo = (that,i) => {
     try {
-        for (let animator of that.animatorList) {
-            animator.animator.pauseToFrame(animator.name, 0.99);
+        if(i){
+            for (let animator of that.animatorList) {
+                animator.animator.pauseToFrame(animator.name, i);
+            }
+        }else{
+            for (let animator of that.animatorList) {
+                animator.animator.pause();
+            }
         }
+       
 
     } catch (err) {
         console.error('XR-FRAME: 场景快进错误: ', err);
@@ -670,7 +695,7 @@ export const pauseAnimatorAndVideo = (that) => {
 export const resumeAnimatorAndVideo = (that) => {
     try {
         for (let animator of that.animatorList) {
-            animator.animator.resume();
+            animator.animator.play();
         }
 
     } catch (err) {

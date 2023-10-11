@@ -62,12 +62,12 @@ Component({
      */
     methods: {
         async replaceMaterial(data) {
-            await xrframe.replaceMaterial(this.scene, data, undefined, undefined, this)
+            await xrframe.replaceMaterial(this.scene, data, undefined, true, this)
             if (this.template_type === "模版二") {
                 await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
             }
-            await xrframe.stopAnimatorAndVideo(this, false)
-            await xrframe.startAnimatorAndVideo(this)
+            // await xrframe.stopAnimatorAndVideo(this, false)
+            // await xrframe.startAnimatorAndVideo(this)
         },
         async setDefaultObjectsData(list, template_type) {
             this.template_type = template_type
@@ -91,17 +91,8 @@ Component({
                 capturePhase: false,
                 bubbles: true
             })
-            // if (template_type === "模版四") {
-            //     this.markerShadow.getComponent(this.XR.Transform).rotation.x = 30 * (Math.PI / 180)
-            //     this.camera.getComponent(this.XR.Camera).setData({
-            //         target: this.markerShadow.getComponent(this.XR.Transform)
-            //     })
-            //     this.camera.addComponent(this.XR.CameraOrbitControl, {});
-            // }
-
             this.i = 2
             this.list = list
-            // const list = this.list = await xrframe.concatArrayToObjects(p_ar, true)
             if (list.length === 0) return
             const promiseList = []
             await xrframe.loadENVObject(this.scene, this)
@@ -137,7 +128,7 @@ Component({
                 if (template_type === "模版二") {
                     await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
                 }
-                await xrframe.startAnimatorAndVideo(this)
+                xrframe.startAnimatorAndVideo(this)
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: true,
                 }, {
@@ -149,9 +140,61 @@ Component({
 
             })
         },
+        async addToScene(list, template_type) {
+            console.log(this.animatorList, 'animatorListanimatorList')
+            let animatorList2 = this.animatorList.filter(v => v.name !== "animate")
+            this.animatorList = animatorList2
+            console.log(this.animatorList, 'animatorListanimatorList')
+
+            this.template_type = template_type
+            wx.showLoading({
+                title: '加载中',
+                mask: true
+            })
+            this.list = list
+            if (list.length === 0) return
+            const promiseList = []
+            for (const obj of list) {
+                if (obj.type === 'text') {
+                    const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow, true, this)
+                    promiseList.push(p)
+
+                } else if (obj.type === "model") {
+                    const p = xrframe.loadModelObject(this.scene, obj, true, this.markerShadow, this)
+                    promiseList.push(p)
+
+                } else if (obj.type === 'video') {
+                    const p = xrframe.loadVideoObject(this.scene, obj, true, this.markerShadow, this)
+
+                } else if (obj.type === 'screen' && template_type === "模版四") {
+                    const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow2, true, this)
+                    promiseList.push(p)
+                } else if (obj.type === 'screen') {
+                    const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow, true, this)
+                    promiseList.push(p)
+                } else if (obj.type === 'image') {
+                    const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow, true, this)
+                    promiseList.push(p)
+                }
+            }
+            await Promise.all(promiseList).then(async results => {
+                this.data.Assetsloaded = true
+                if (template_type !== "模版四") {
+                    await xrframe.handleShadowRotate(this, template_type)
+                }
+                if (template_type === "模版二") {
+                    await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
+                }
+                await xrframe.stopAnimatorAndVideo(this, false)
+                xrframe.startAnimatorAndVideo(this)
+                wx.hideLoading()
+
+            })
+        },
         async concatArrayToObjects({
             p_ar
         }, flag) {
+            this.result = p_ar
             return await xrframe.concatArrayToObjects(p_ar, flag)
         },
         async handleReady({
@@ -174,7 +217,7 @@ Component({
             xrframe.removeFromScene(this.markerShadow, this.markerShadow2, this.scene.getElementById(uid))
         },
         async saveSceneAsImage() {
-            xrframe.pauseAnimatorAndVideo(this)
+            xrframe.pauseAnimatorAndVideo(this, 0.99)
             const result = await xrframe.saveSceneAsImage(this.scene)
             await xrframe.resumeAnimatorAndVideo(this)
             return result
