@@ -346,7 +346,7 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
         if (!markerShadow || !node) return;
         await addObjectToShadow(markerShadow, node, modelData['3d_info'], false, that);
 
-        return;
+        // return;
     } catch (err) {
         console.error('XR-FRAME GLTF模型加载错误: ', err);
     }
@@ -354,20 +354,36 @@ export const loadModelObject = async (scene, modelData, animatorList, markerShad
 
 export const loadVideoObject = async (scene, videoData, videoList, markerShadow, that) => {
     try {
-        await scene.assets.releaseAsset('video-texture', videoData.uid);
-        await scene.assets.releaseAsset('material', `material-${videoData.uid}`);
+        scene.assets.releaseAsset('video-texture', videoData.uid);
+        scene.assets.releaseAsset('material', `material-${videoData.uid}`);
 
         if (!videoData.file_url) throw '无资源URL';
-        let video = await scene.createVideoTexture({
-            src: videoData.file_url,
-            autoPlay: false,
-            loop: true,
-            abortAudio: false,
-            assetId: videoData.uid,
+        console.log(videoData, 'imagedatA_FILEURL')
 
+        // let video = await scene.createVideoTexture({
+        //     src: videoData.file_url,
+        //     autoPlay: false,
+        //     loop: true,
+        //     abortAudio: false,
+        //     assetId: videoData.uid,
+
+        // });
+        let {
+            value: video
+        } = await scene.assets.loadAsset({
+            type: 'video-texture',
+            assetId: videoData.uid,
+            src: videoData.file_url,
+            options: {
+                loop: true,
+                abortAudio: false,
+                autoPlay: false,
+            },
         });
+        console.log(video, 'imagedatA_FILEURL')
+
         if (!scene) return;
-        let material = await scene.createMaterial(
+        let material = scene.createMaterial(
             await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
                 // await scene.assets.getAsset('effect', 'standard'), {
                 u_baseColorMap: video.texture,
@@ -388,7 +404,7 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         that.videoList.push(video);
         if (!markerShadow || !node) return;
         await addObjectToShadow(markerShadow, node, videoData['3d_info'], true, that);
-        return;
+        // return;
     } catch (err) {
         console.error('XR-FRAME: 视频素材加载错误: ', err);
     }
@@ -480,7 +496,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
             });
         }
 
-        return;
+        // return;
     } catch (err) {
         console.error('XR-FRAME: 图片素材加载错误: ', err);
     }
@@ -574,7 +590,7 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
             });
         }
 
-        return;
+        // return;
     } catch (err) {
         console.error('XR-FRAME: 图片素材替换错误: ', err);
     }
@@ -632,6 +648,7 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
             await handleTemplate4KeyFrame(that)
 
         }
+        console.log('template=mobjsi')
         for (let [index, item] of that.textList.entries()) {
             let animator = item.node.addComponent(XRFrameSystem.Animator);
 
@@ -667,26 +684,26 @@ export const startAnimatorAndVideo = (that) => {
         }
         for (let video of that.videoList) {
             video.stop();
-            setTimeout(async () => {
-                await video.play();
+            setTimeout(() => {
+                video.play();
             }, 50);
         }
     } catch (err) {
         console.error('XR-FRAME: 场景动画开始错误: ', err);
     }
 }
-export const pauseAnimatorAndVideo = (that,i) => {
+export const pauseAnimatorAndVideo = (that, i) => {
     try {
-        if(i){
+        if (i) {
             for (let animator of that.animatorList) {
                 animator.animator.pauseToFrame(animator.name, i);
             }
-        }else{
+        } else {
             for (let animator of that.animatorList) {
                 animator.animator.pause();
             }
         }
-       
+
 
     } catch (err) {
         console.error('XR-FRAME: 场景快进错误: ', err);

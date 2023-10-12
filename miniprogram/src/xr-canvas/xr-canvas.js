@@ -31,13 +31,13 @@ Component({
         }
     },
     observers: {
-        // p_scanFlag(newVal) {
-        //     if (newVal && this.data.workflowType === 3) {
-        //         this.setData({
-        //             trackerFlag: true
-        //         })
-        //     }
-        // }
+        p_scanFlag(newVal) {
+            if (newVal && this.data.workflowType === 3) {
+                this.setData({
+                    trackerFlag: true
+                })
+            }
+        }
     },
 
     data: {
@@ -167,6 +167,14 @@ Component({
                         await this.startAnimatorAndVideo()
 
                         this.firstFlag = true
+                        this.triggerEvent('handleAssetsLoaded', {
+                            handleAssetsLoaded: true,
+                            type: this.data.p_arData.p_ar.template_type
+                        }, {
+                            composed: true,
+                            capturePhase: false,
+                            bubbles: true
+                        })
                     } else {
 
                         this.triggerEvent('handleAssetsLoaded', {
@@ -270,84 +278,86 @@ Component({
 
                 }
             }
-            await Promise.all(promiseList)
+            await Promise.all(promiseList).then(async results => {
 
-            this.data.Assetsloaded = true
-            this.triggerEvent('handleAssetsLoaded', {
-                handleAssetsLoaded: true,
-            }, {
-                composed: true,
-                capturePhase: false,
-                bubbles: true
-            })
-            await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
-            if (this.active && this.data.workflowType === 3) {
-                await xrframe.handleShadowRotate(this)
-                this.handleTemplate3and4(result.template_type)
-                this.stay_duration = result.stay_duration * 1000
-                if (this.innerAudioContext2) {
-                    this.innerAudioContext2.play()
-                    this.triggerEvent('bgcAudioFlagChange', {
-                        bgc_AudioFlag: true
-                    })
-                }
-                this.Transform.setData({
-                    visible: true
+                this.data.Assetsloaded = true
+                this.triggerEvent('handleAssetsLoaded', {
+                    handleAssetsLoaded: true,
+                }, {
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
                 })
-                this.firstFlag = true
-                await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
-                this.startAnimatorAndVideo()
+                // await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
-                return
-            }
-
-            if (this.active && this.data.workflowType === 1) {
-                await xrframe.handleShadowRotate(this)
-                this.handleTemplate3and4(result.template_type)
-                this.stay_duration = result.stay_duration * 1000
-                if (this.innerAudioContext2) {
-                    this.innerAudioContext2.play()
-                    this.triggerEvent('bgcAudioFlagChange', {
-                        bgc_AudioFlag: true
-                    })
-                }
-                if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
-                    await this.StayPageShow()
-                }
-                this.Transform.setData({
-                    visible: true
-                })
-                await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
-                this.startAnimatorAndVideo()
-
-                this.firstFlag = true
-            }
-
-
-            if (this.data.workflowType === 2) {
-                if (result.template_type === "模版四") {
+                if (this.active && this.data.workflowType === 3) {
                     await xrframe.handleShadowRotate(this)
-                }
-                this.handleTemplate3and4(result.template_type)
-
-                if (this.innerAudioContext2) {
-                    this.innerAudioContext2.play()
-                    this.triggerEvent('bgcAudioFlagChange', {
-                        bgc_AudioFlag: true
+                    this.handleTemplate3and4(result.template_type)
+                    this.stay_duration = result.stay_duration * 1000
+                    if (this.innerAudioContext2) {
+                        this.innerAudioContext2.play()
+                        this.triggerEvent('bgcAudioFlagChange', {
+                            bgc_AudioFlag: true
+                        })
+                    }
+                    this.Transform.setData({
+                        visible: true
                     })
+                    this.firstFlag = true
+                    await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                    this.startAnimatorAndVideo()
+
+                    return
                 }
-                await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
-                console.log(this.videoList,'videolist')
-                this.startAnimatorAndVideo()
 
-                return
-            }
-            this.setData({
-                trackerFlag: true
+                if (this.active && this.data.workflowType === 1) {
+                    await xrframe.handleShadowRotate(this)
+                    this.handleTemplate3and4(result.template_type)
+                    this.stay_duration = result.stay_duration * 1000
+                    if (this.innerAudioContext2) {
+                        this.innerAudioContext2.play()
+                        this.triggerEvent('bgcAudioFlagChange', {
+                            bgc_AudioFlag: true
+                        })
+                    }
+                    if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
+                        await this.StayPageShow()
+                    }
+                    this.Transform.setData({
+                        visible: true
+                    })
+                    await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                    this.startAnimatorAndVideo()
+
+                    this.firstFlag = true
+                }
+
+
+                if (this.data.workflowType === 2) {
+                    if (result.template_type === "模版四") {
+                        await xrframe.handleShadowRotate(this)
+                    }
+                    this.handleTemplate3and4(result.template_type)
+
+                    if (this.innerAudioContext2) {
+                        this.innerAudioContext2.play()
+                        this.triggerEvent('bgcAudioFlagChange', {
+                            bgc_AudioFlag: true
+                        })
+                    }
+                    await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                    console.log(this.videoList, 'videolist')
+                    this.startAnimatorAndVideo()
+
+                    return
+                }
+                this.setData({
+                    trackerFlag: true
+                })
+
+
             })
-
-
 
         },
         startAnimatorAndVideo() {
@@ -517,7 +527,7 @@ Component({
                 console.log(obslist1)
                 this.setData({
                     obsList: obslist1,
-                    trackerFlag: true
+                    // trackerFlag: true
                 })
                 await this.concatAndLoadAssets(this.data.p_arData.p_ar)
                 // this.handleTemplate3and4(p_ar.template_type)
