@@ -165,6 +165,7 @@ Component({
 
                 } else if (obj.type === 'video') {
                     const p = xrframe.loadVideoObject(this.scene, obj, true, this.markerShadow, this)
+                    promiseList.push(p)
 
                 } else if (obj.type === 'screen' && template_type === "模版四") {
                     const p = xrframe.loadImageObject(this.scene, obj, this.markerShadow2, true, this)
@@ -182,9 +183,9 @@ Component({
                 if (template_type !== "模版四") {
                     await xrframe.handleShadowRotate(this, template_type)
                 }
-                if (template_type === "模版二") {
+                // if (template_type === "模版二") {
                     await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
-                }
+                // }
                 await xrframe.stopAnimatorAndVideo(this, false)
                 xrframe.startAnimatorAndVideo(this)
                 wx.hideLoading()

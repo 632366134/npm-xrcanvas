@@ -145,6 +145,14 @@ Component({
                         } = await xrframe.recognizeCigarette(this.scene, this)
                     }
                     if (this.data.Assetsloaded) {
+                        this.triggerEvent('handleAssetsLoaded', {
+                            handleAssetsLoaded: true,
+                            type: this.data.p_arData.p_ar.template_type
+                        }, {
+                            composed: true,
+                            capturePhase: false,
+                            bubbles: true
+                        })
                         if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.text) {
                             await this.StayPageShow()
                         }
@@ -167,14 +175,7 @@ Component({
                         await this.startAnimatorAndVideo()
 
                         this.firstFlag = true
-                        this.triggerEvent('handleAssetsLoaded', {
-                            handleAssetsLoaded: true,
-                            type: this.data.p_arData.p_ar.template_type
-                        }, {
-                            composed: true,
-                            capturePhase: false,
-                            bubbles: true
-                        })
+                       
                     } else {
 
                         this.triggerEvent('handleAssetsLoaded', {
@@ -264,6 +265,7 @@ Component({
 
                 } else if (obj.type === 'video') {
                     const p = xrframe.loadVideoObject(this.scene, obj, true, markerShadow, this)
+                    promiseList.push(p)
 
                 } else if (obj.type === 'screen' && result.template_type === "模版四" && this.data.workflowType !== 4) {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow2, true, this)
