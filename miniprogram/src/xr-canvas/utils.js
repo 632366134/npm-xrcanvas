@@ -1,7 +1,12 @@
-const baseUrl = 'http://dev-tob-anhui-ar.aimall-tech.com'
-const Authorization = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOjF9.eyJhY2NvdW50X3VpZCI6InUtY2pqZ2l0czlhcXBucTJiMmoybDAiLCJleHBpcmVkIjoxNjk5MjM0NzkxfQ.TKbphPPf3ZLjaFSej5n9jtwPJ2oI0DSJ36N-NPt_aBA'
-// const baseUrl = wx.getStorageSync('apiHost'); // 获取域名
-// const Authorization = wx.getStorageSync('token'); // 获取Authorization请求头
+let baseUrl = wx.getStorageSync('apiHost'); // 获取域名
+let Authorization = wx.getStorageSync('token'); // 获取Authorization请求头
+if (!!!baseUrl) {
+    baseUrl = 'http://dev-tob-anhui-ar.aimall-tech.com'
+
+}
+if (!!!Authorization) {
+    Authorization = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOjF9.eyJhY2NvdW50X3VpZCI6InUtY2pqZ2l0czlhcXBucTJiMmoybDAiLCJleHBpcmVkIjoxNjk5MjM0NzkxfQ.TKbphPPf3ZLjaFSej5n9jtwPJ2oI0DSJ36N-NPt_aBA'
+}
 const httpRequest = (url, data = {}, method = "GET", header = {
     'Authorization': Authorization
 }) => {
@@ -42,7 +47,7 @@ export const homeRecognize = (data) => {
                 'Authorization': Authorization
             },
             success(res) {
-                console.log(res,'resres')
+                console.log(res, 'resres')
                 if (res.data.err_code === 1001) {
                     // 登录授权过期
                     console.warn('登陆授权过期');

@@ -315,6 +315,7 @@ export const loadENVObject = async (scene, that) => {
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('gltf', modelData.uid);
+   
 
         if (!modelData.file_url) throw '无资源URL';
         let model = await scene.assets.loadAsset({

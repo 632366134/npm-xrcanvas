@@ -220,6 +220,7 @@ Component({
         type3guideShow(p_guide) {
             this.setData({
                 p_guideFlag: true,
+                xrShow: true
 
             })
             if (p_guide.audio_url) {
@@ -235,16 +236,13 @@ Component({
                 }
                 this.innerAudioContext.onEnded(list)
             }
-            let timer = setTimeout(() => {
-                this.setData({
-                    xrShow: true
-                })
-            }, (p_guide.duration * 1000) - 500);
             timer = setTimeout(() => {
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
                 })
+                // const node =this.selectComponent('#xr-canvas')
+                // node.trackFlagFun(true)
                 clearTimeout(timer)
             }, p_guide.duration * 1000);
         },

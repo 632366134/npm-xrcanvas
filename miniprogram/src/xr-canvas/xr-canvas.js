@@ -31,11 +31,12 @@ Component({
         }
     },
     observers: {
-        p_scanFlag(newVal) {
-            if (newVal && this.data.workflowType === 3) {
+        async p_scanFlag(newVal) {
+            if (newVal && (this.data.workflowType === 3 || this.data.workflowType === 1)) {
                 this.setData({
                     trackerFlag: true
                 })
+                await this.typeScan()
             }
         }
     },
@@ -175,9 +176,8 @@ Component({
                         await this.startAnimatorAndVideo()
 
                         this.firstFlag = true
-                       
-                    } else {
 
+                    } else {
                         this.triggerEvent('handleAssetsLoaded', {
                             handleAssetsLoaded: false,
                             type: this.data.p_arData.p_ar.template_type
@@ -187,6 +187,7 @@ Component({
                             bubbles: true
                         })
                     }
+
 
                     this.loading = true
                 } else {
@@ -254,6 +255,7 @@ Component({
             if (list.length === 0) return
             const promiseList = []
             await xrframe.loadENVObject(this.scene, this)
+            let d
             for (const obj of list) {
                 if (obj.type === 'text') {
                     const p = xrframe.loadImageObject(this.scene, obj, markerShadow, true, this)
@@ -282,18 +284,28 @@ Component({
             }
             await Promise.all(promiseList).then(async results => {
 
-
                 this.data.Assetsloaded = true
-                this.triggerEvent('handleAssetsLoaded', {
-                    handleAssetsLoaded: true,
-                }, {
-                    composed: true,
-                    capturePhase: false,
-                    bubbles: true
-                })
+
+                if (this.data.workflowType !== 3) {
+                    this.triggerEvent('handleAssetsLoaded', {
+                        handleAssetsLoaded: true,
+                    }, {
+                        composed: true,
+                        capturePhase: false,
+                        bubbles: true
+                    })
+                }
+
                 // await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
                 if (this.active && this.data.workflowType === 3) {
+                    this.triggerEvent('handleAssetsLoaded', {
+                        handleAssetsLoaded: true,
+                    }, {
+                        composed: true,
+                        capturePhase: false,
+                        bubbles: true
+                    })
                     await xrframe.handleShadowRotate(this)
                     this.handleTemplate3and4(result.template_type)
                     this.stay_duration = result.stay_duration * 1000
@@ -382,6 +394,11 @@ Component({
             }
 
         },
+        trackFlagFun(flag) {
+            this.setData({
+                trackerFlag: true
+            })
+        },
         handleReady({
             detail
         }) {
@@ -400,6 +417,35 @@ Component({
         handleAssetsLoaded: function ({
             detail
         }) {},
+        async typeScan() {
+
+            let {
+                p_ar
+            } = await xrframe.recognizeCigarette(this.scene)
+            if (!!!p_ar) return
+            const {
+                front_image_url,
+                front_image_uid,
+                back_image_url,
+                back_image_uid
+            } = p_ar?.cigarette
+            let obsList = [{
+                url: front_image_url,
+                id: front_image_uid
+            }, {
+                url: back_image_url,
+                id: back_image_uid
+            }]
+            let obslist1 = obsList.filter(v => {
+                return typeof v.url !== 'undefined' && v.url !== null
+            })
+            console.log(obslist1)
+            this.setData({
+                obsList: obslist1,
+            })
+            this.stay_duration = p_ar.stay_duration * 1000
+            await this.concatAndLoadAssets(p_ar)
+        },
         async handleARReady({
             detail
         }) {
@@ -416,35 +462,6 @@ Component({
             })
             if (this.data.workflowType === 1) {
 
-                let {
-                    p_ar
-                } = await xrframe.recognizeCigarette(this.scene)
-                if (!!!p_ar) return
-                const {
-                    front_image_url,
-                    front_image_uid,
-                    back_image_url,
-                    back_image_uid
-                } = p_ar?.cigarette
-                let obsList = [{
-                    url: front_image_url,
-                    id: front_image_uid
-                }, {
-                    url: back_image_url,
-                    id: back_image_uid
-                }]
-                let obslist1 = obsList.filter(v => {
-                    return typeof v.url !== 'undefined' && v.url !== null
-                })
-                console.log(obslist1)
-                this.setData({
-                    obsList: obslist1,
-                    trackerFlag: true
-                })
-
-                this.stay_duration = p_ar.stay_duration * 1000
-                // this.handleTemplate3and4(p_ar.template_type)
-                await this.concatAndLoadAssets(p_ar)
             } else if (this.data.workflowType === 2) {
 
                 const {
@@ -455,9 +472,12 @@ Component({
                 let {
                     p_ar
                 } = this.data.p_arData
+                // p_ar.gltf_list[0].file_url = "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/95ec4c699d6cd08ce2a7b477ad340cfa.glb"
+                // p_ar.model.file_url = "http://arp3.arsnowslide.com/undefined/434494315640082432/undefined/123123.gltf"
                 if (p_guide && p_scan && p_ending && Object.keys(p_ar).length > 0) {
                     let timer2 = this.timer2 = setTimeout(async () => {
                         this.handleTemplate3and4(p_ar.template_type)
+
                         await this.concatAndLoadAssets(p_ar)
                         this.stay_duration = p_ar.stay_duration * 1000
                         this.Transform.setData({
@@ -543,8 +563,9 @@ Component({
             let s = this.s = ({
                 y
             }) => {
-                if (Math.abs(y) < 0.01) return
-                this.Transform.position.x -= y * 0.1
+                if (y > 0.15 || y < -0.15) {
+                    this.Transform.position.x += y / 17
+                }
             }
             await wx.startGyroscope({
                 interval: 'ui',
