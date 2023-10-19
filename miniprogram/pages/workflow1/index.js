@@ -21,7 +21,7 @@ Page({
             flag: true
         })
     },
-    onUnload() {},
+    onUnload() { },
     async loadingChange({
         detail
     }) {
@@ -32,7 +32,7 @@ Page({
     handleTrackerSwitch({
         detail
     }) {
-        console.log(detail, "handleTrackerSwitchhandleTrackerSwitchhandleTrackerSwitch")
+
     },
     stayPage() {
 

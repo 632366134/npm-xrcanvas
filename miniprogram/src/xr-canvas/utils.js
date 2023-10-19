@@ -47,7 +47,7 @@ export const homeRecognize = (data) => {
                 'Authorization': Authorization
             },
             success(res) {
-                console.log(res, 'resres')
+
                 if (res.data.err_code === 1001) {
                     // 登录授权过期
                     console.warn('登陆授权过期');

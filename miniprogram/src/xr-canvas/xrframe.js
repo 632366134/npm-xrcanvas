@@ -95,7 +95,7 @@ export const handleXRCompatibility = () => {
     };
     const info = wx.getSystemInfoSync();
     const systemType = info.system.split(' ')[0];
-    console.log(`XR-FRAME兼容处理\n设备型号: ${info.model}\nSDK版本: ${info.SDKVersion}\n微信版本: ${info.version}`);
+    ;
     const isNotSupported = {
         device: isNotSupportedDevice(info.model),
         SDKVersion: isVersionTooLow(info.SDKVersion, lowestVersion.SDK),
@@ -179,7 +179,6 @@ export const recognizeCigarette = (scene, that = null) => {
 
                 recognizedResult = JSON.parse(recognizedResult);
             }
-            console.log('XR-FRAME 烟包识别接口', recognizedResult);
             if (recognizedResult.err_code !== 0) throw recognizedResult.err_desc || null;
             const {
                 result
@@ -315,7 +314,7 @@ export const loadENVObject = async (scene, that) => {
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('gltf', modelData.uid);
-   
+
 
         if (!modelData.file_url) throw '无资源URL';
         let model = await scene.assets.loadAsset({
@@ -359,7 +358,7 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         scene.assets.releaseAsset('material', `material-${videoData.uid}`);
 
         if (!videoData.file_url) throw '无资源URL';
-        console.log(videoData, 'imagedatA_FILEURL')
+
 
         // let video = await scene.createVideoTexture({
         //     src: videoData.file_url,
@@ -381,14 +380,14 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
                 autoPlay: false,
             },
         });
-        console.log(video, 'imagedatA_FILEURL')
+
 
         if (!scene) return;
         let material = scene.createMaterial(
             await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
-                // await scene.assets.getAsset('effect', 'standard'), {
-                u_baseColorMap: video.texture,
-            }
+            // await scene.assets.getAsset('effect', 'standard'), {
+            u_baseColorMap: video.texture,
+        }
         );
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRMesh);
@@ -418,7 +417,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
 
         if (!imageData.file_url) throw '无资源URL';
         if (imageData.type === "image") {
-            console.log('type=image!!')
+
 
             const {
                 rotation
@@ -434,8 +433,8 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         if (!scene) return;
         let material = await scene.createMaterial(
             scene.assets.getAsset('effect', 'standard'), {
-                u_baseColorMap: image.value,
-            }
+            u_baseColorMap: image.value,
+        }
         );
         material.renderQueue = 2500;
 
@@ -507,7 +506,7 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         await scene.assets.releaseAsset('texture', imageData.uid);
         if (!imageData.file_url) throw '无资源URL';
         if (imageData.type === "image") {
-            console.log('type=image!!')
+
             const {
                 rotation
             } = imageData['3d_info'];
@@ -521,8 +520,8 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         if (!scene) return;
         let material = await scene.createMaterial(
             scene.assets.getAsset('effect', 'standard'), {
-                u_baseColorMap: image.value,
-            }
+            u_baseColorMap: image.value,
+        }
         );
         material.renderQueue = 2500;
         material.alphaMode = "BLEND";
@@ -649,7 +648,7 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
             await handleTemplate4KeyFrame(that)
 
         }
-        console.log('template=mobjsi')
+
         for (let [index, item] of that.textList.entries()) {
             let animator = item.node.addComponent(XRFrameSystem.Animator);
 
@@ -883,7 +882,7 @@ export function throttle(fn, wait, that) {
     }
 }
 export const releaseAssetList = (scene, list) => {
-    console.log(scene, list)
+
     if (list && list?.length !== 0 && scene) {
         try {
             for (const obj of list) {
@@ -902,11 +901,11 @@ export const releaseAssetList = (scene, list) => {
                 } else if (obj.type === 'image') {
                     scene.assets.releaseAsset('texture', obj.uid);
                     scene.assets.releaseAsset('material', `material-${obj.uid}`);
-                } else {}
+                } else { }
             }
             scene.assets.releaseAsset('env-data', 'env1');
         } catch (error) {
-            console.log('releaseAsset失败', error)
+
         }
     }
 }

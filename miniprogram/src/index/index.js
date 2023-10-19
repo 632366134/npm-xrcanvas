@@ -99,6 +99,7 @@ Component({
                     p_scan,
                     p_ending,
                 } = this.data.workflowData
+                console.log(this.data.workflowData)
                 const {
                     p_ar
                 } = this.data.p_arData
@@ -109,12 +110,18 @@ Component({
                 } else if (p_guide) {
                     this.guideShow(p_guide, true)
                 } else if (p_scan) {
-                    if (!await this.arCameraShow()) return
-                    await xrframe.getCameraAuthorize()
-                    this.setData({
-                        p_scanFlag: true,
-                        xrShow: true
-                    })
+                    if (!await this.arCameraShow()) {
+                        this.setData({
+                            p_scanFlag: true,
+                        })
+                    }else {
+                        await xrframe.getCameraAuthorize()
+                        this.setData({
+                            p_scanFlag: true,
+                            xrShow: true
+                        })
+                    }
+                  
                 } else if (p_ar && Object.keys(p_ar).length > 0) {
                     // const {
                     //     imageUrl,
@@ -215,7 +222,7 @@ Component({
 
                 })
             }
-            
+
         },
         type3guideShow(p_guide) {
             this.setData({
@@ -268,6 +275,7 @@ Component({
             }
             if (flag) return
             let timer = setTimeout(async () => {
+                list &&list()
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
@@ -279,14 +287,14 @@ Component({
             detail
         }) {
             if (this.data.workflowType === 4) return
-            console.log(detail, 'detaildetaildetail')
+
             if (!detail.handleAssetsLoaded) {
                 const {
                     imageUrl,
                     duration,
                     progressColor
                 } = this.data.loadingData[detail.type]
-                console.log(imageUrl, duration, progressColor)
+
                 this.setData({
                     p_loadingFlag: !detail.handleAssetsLoaded,
                     p_scanFlag: false,
@@ -308,7 +316,7 @@ Component({
         loadingProgress({
             detail
         }) {
-            console.log(detail, 'detail')
+
             const {
                 index,
                 length
@@ -349,7 +357,7 @@ Component({
         showInteractMedia({
             detail
         }) {
-            console.log('showInteractMediashowInteractMedia')
+
             if (this.data.eventFlag) return
             const {
                 image_url,
@@ -371,7 +379,7 @@ Component({
         },
         eventFlagChange() {
             const time = setTimeout(() => {
-            console.log('eventFlagChangeeventFlagChange')
+
 
                 this.setData({
                     eventFlag: false,
@@ -415,6 +423,6 @@ Component({
         move() {
 
         },
-        catchtap() {}
+        catchtap() { }
     }
 })

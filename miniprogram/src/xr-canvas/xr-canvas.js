@@ -32,11 +32,16 @@ Component({
     },
     observers: {
         async p_scanFlag(newVal) {
-            if (newVal && (this.data.workflowType === 3 || this.data.workflowType === 1)) {
+            if (newVal&&this.data.workflowType === 1) {
                 this.setData({
                     trackerFlag: true
                 })
                 await this.typeScan()
+            }
+            if(newVal && this.data.workflowType === 3  ){
+                this.setData({
+                    trackerFlag: true
+                })
             }
         }
     },
@@ -99,7 +104,7 @@ Component({
             }
         },
         async detached() {
-            console.log(this.scene, this.list)
+
             xrframe.releaseAssetList(this.scene, this.list)
             await this.stopAnimatorAndVideo()
 
@@ -251,7 +256,7 @@ Component({
             this.i = 2
             this.result = result
             const list = this.list = await xrframe.concatArrayToObjects(result, true)
-            console.log(result, list)
+
             if (list.length === 0) return
             const promiseList = []
             await xrframe.loadENVObject(this.scene, this)
@@ -286,7 +291,6 @@ Component({
 
                 this.data.Assetsloaded = true
 
-                if (this.data.workflowType !== 3) {
                     this.triggerEvent('handleAssetsLoaded', {
                         handleAssetsLoaded: true,
                     }, {
@@ -294,18 +298,11 @@ Component({
                         capturePhase: false,
                         bubbles: true
                     })
-                }
 
                 // await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
                 if (this.active && this.data.workflowType === 3) {
-                    this.triggerEvent('handleAssetsLoaded', {
-                        handleAssetsLoaded: true,
-                    }, {
-                        composed: true,
-                        capturePhase: false,
-                        bubbles: true
-                    })
+                  
                     await xrframe.handleShadowRotate(this)
                     this.handleTemplate3and4(result.template_type)
                     this.stay_duration = result.stay_duration * 1000
@@ -361,7 +358,7 @@ Component({
                         })
                     }
                     await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
-                    console.log(this.videoList, 'videolist')
+
                     this.startAnimatorAndVideo()
 
                     return
@@ -413,15 +410,16 @@ Component({
         },
         handleAssetsProgress: function ({
             detail
-        }) {},
+        }) { },
         handleAssetsLoaded: function ({
             detail
-        }) {},
+        }) { },
         async typeScan() {
-
+            console.log(this.scene,'scene')
             let {
                 p_ar
             } = await xrframe.recognizeCigarette(this.scene)
+            console.log(!!!p_ar,'ad')
             if (!!!p_ar) return
             const {
                 front_image_url,
@@ -439,7 +437,7 @@ Component({
             let obslist1 = obsList.filter(v => {
                 return typeof v.url !== 'undefined' && v.url !== null
             })
-            console.log(obslist1)
+
             this.setData({
                 obsList: obslist1,
             })
@@ -494,7 +492,7 @@ Component({
                 } else if (p_scan) {
                     return
                 } else if (Object.keys(p_ar).length > 0) {
-                    // console.log(p_ar.template_type,'p_ar.template_type')
+                    // 
                     this.handleTemplate3and4(p_ar.template_type)
                     await this.concatAndLoadAssets(p_ar)
                     this.Transform.setData({
@@ -510,7 +508,7 @@ Component({
                     cigarette
                 } = this.data.p_arData.p_ar
                 if (Array.isArray(cigarette)) {
-                    console.log('参数是数组');
+                    ;
                     for (const obj of cigarette) {
                         if (!!obj.front_image_url && !!obj.front_image_uid) {
                             const o = {
@@ -538,7 +536,7 @@ Component({
                     }]
 
                 } else {
-                    console.log('参数不是数组也不是对象');
+                    ;
                     throw '识别图错误!'
                 }
 
@@ -546,7 +544,7 @@ Component({
                 let obslist1 = obsList.filter(v => {
                     return typeof v.url !== 'undefined' && v.url !== null
                 })
-                console.log(obslist1)
+
                 this.setData({
                     obsList: obslist1,
                     // trackerFlag: true

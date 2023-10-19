@@ -141,10 +141,10 @@ Component({
             })
         },
         async addToScene(list, template_type) {
-            console.log(this.animatorList, 'animatorListanimatorList')
+
             let animatorList2 = this.animatorList.filter(v => v.name !== "animate")
             this.animatorList = animatorList2
-            console.log(this.animatorList, 'animatorListanimatorList')
+
 
             this.template_type = template_type
             wx.showLoading({
@@ -184,7 +184,7 @@ Component({
                     await xrframe.handleShadowRotate(this, template_type)
                 }
                 // if (template_type === "模版二") {
-                    await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
+                await xrframe.addTemplateTextAnimator(template_type, this.scene, this)
                 // }
                 await xrframe.stopAnimatorAndVideo(this, false)
                 xrframe.startAnimatorAndVideo(this)

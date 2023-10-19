@@ -28,7 +28,7 @@ Page({
         const {
             result
         } = await getskuTemplatesList(`?pl=100,0`)
-        console.log(result, 'd')
+
         this.setData({
             flag: true,
             list: result.skus
@@ -46,7 +46,7 @@ Page({
     async loadingChange({
         detail
     }) {
-        console.log(detail, 'loadingchange')
+
         if (!detail.handleAssetsLoaded) return
         const node = this.node = this.selectComponent('#npm-xrframe').selectComponent('#xr-canvas')
 
@@ -67,7 +67,7 @@ Page({
     showArBox2({
         currentTarget
     }) {
-        console.log(currentTarget, 'e')
+
         let data = currentTarget.dataset.data
         if (data.p_ar.template_type === '模版一') {
             this.setData({
@@ -107,7 +107,7 @@ Page({
         detail,
         currentTarget
     }) {
-        console.log(detail.value, currentTarget.dataset.index, 'e')
+
         // this.drawCanvas(detail.value, currentTarget.dataset.index)
         this.text = detail.value
         this.index = currentTarget.dataset.index
@@ -141,16 +141,16 @@ Page({
                 canvasId: 'textCanvas',
                 success: (res) => {
 
-                    console.log(res.tempFilePath); // 在这里可以获取到生成的 PNG 图片路径
+                    ; // 在这里可以获取到生成的 PNG 图片路径
                     if (p_arData.p_ar.template_type === '模版一' || p_arData.p_ar.template_type === '模版三') {
 
                         this.result[index - 1].file_url = res.tempFilePath
-                        console.log(this.result[index - 1])
+
                         this.node2.replaceMaterial(this.result[index - 1])
                     } else {
                         let list = this.result.filter(v => v.type === "screen" || v.type === "text" || v.type === "image")
                         list[index - 1].file_url = res.tempFilePath
-                        console.log(list[index - 1])
+
 
                         this.node2.replaceMaterial(list[index - 1])
 
@@ -163,7 +163,7 @@ Page({
         });
     },
     async handleReady() {
-        console.log("handleReadyhandleReadyhandleReady")
+
         // const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
         // const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
         // await node2.setDefaultObjectsData(result)
@@ -171,7 +171,7 @@ Page({
     },
     removeFromScene(uid) {
         if (this.result.length === 0) return
-        console.log(this.result)
+
         // this.node2.removeFromScene(this.result[this.i++].uid)
         this.node2.hideChildVisible(this.result[this.i++].uid)
 
@@ -197,20 +197,20 @@ Page({
     },
     async addToScene() {
         let data = this.result[this.d++]
-        
- 
+
+
         if (data) {
             await this.node2.addToScene([data], this.data.p_arData.p_ar.template_type)
         }
 
     },
     loadingProgress(e) {
-        console.log(e, 'loadingProgressloadingProgress')
+
     },
     handleAssetsLoaded({
         detail
     }) {
-        console.log(detail.handleAssetsLoaded, 'handleAssetsLoadedhandleAssetsLoaded')
+
     },
     hideChildVisible() {
         this.node2.hideChildVisible(uid)
