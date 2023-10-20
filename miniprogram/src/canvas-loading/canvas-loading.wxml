@@ -3,12 +3,12 @@
     </xr-assets>
     <xr-node>
         <xr-node id="markerShadow3" node-id="markerShadow3" position="{{targetPosition[0]}} {{targetPosition[1]}} {{targetPosition[2]}}">
-            <xr-node id="markerShadow" visible="{{true}}" node-id="markerShadow" position="0 0 0">
-                <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0" >
-                </xr-node>
+
+        </xr-node>
+        <xr-node id="markerShadow" visible="{{true}}" node-id="markerShadow" position="0 0 0">
+            <xr-node id="markerShadow2" node-id="markerShadow2" position="0 0 0">
             </xr-node>
         </xr-node>
-
         <xr-camera id="camera" node-id="camera" position="{{cameraPosition[0]}} {{cameraPosition[1]}} {{cameraPosition[2]}}" clear-color="0.925 0.925 0.925 1" target="markerShadow3"></xr-camera>
     </xr-node>
     <xr-node node-id="lights">

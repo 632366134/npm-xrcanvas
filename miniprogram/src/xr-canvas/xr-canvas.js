@@ -32,16 +32,108 @@ Component({
     },
     observers: {
         async p_scanFlag(newVal) {
-            if (newVal&&this.data.workflowType === 1) {
-                this.setData({
-                    trackerFlag: true
-                })
-                await this.typeScan()
+            if (newVal) {
+                this.data.newval2 = true
+
             }
-            if(newVal && this.data.workflowType === 3  ){
+            if (newVal && this.data.workflowType === 1) {
+                if (!this.scene) return
+                if (!this.data.loadingNow) {
+
+                    this.setData({
+                        trackerFlag: true,
+                        loadingNow: true,
+                    })
+                    await this.typeScan()
+                }
+
+            }
+            if (newVal && this.data.workflowType === 3) {
                 this.setData({
                     trackerFlag: true
                 })
+
+
+            }
+            if (this.index === 1 && this.data.workflowType === 2) {
+                const {
+                    p_ending,
+                } = this.data.workflowData
+                let {
+                    p_ar
+                } = this.data.p_arData
+                if (newVal) {} else {
+                    if (this.data.Assetsloaded) {
+                        this.handleTemplate3and4(p_ar.template_type)
+                        if (this.innerAudioContext2) {
+                            this.innerAudioContext2.play()
+                            this.triggerEvent('bgcAudioFlagChange', {
+                                bgc_AudioFlag: true
+                            })
+                        }
+                        this.stay_duration = p_ar.stay_duration * 1000
+                        this.Transform.setData({
+                            visible: true
+                        })
+                        if (this.template_type === "模版四") {
+                            await xrframe.handleShadowRotate(this)
+                        }
+                        await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
+                        await this.startAnimatorAndVideo()
+                        if (p_ending && p_ending.text) {
+                            await this.StayPageShow()
+                        }
+                        await this.gyroscope(p_ar)
+                    } else {
+                        if (!this.data.newval2) return
+                        this.triggerEvent('handleAssetsLoaded', {
+                            handleAssetsLoaded: false,
+                            type: this.template_type
+                        }, {
+                            composed: true,
+                            capturePhase: false,
+                            bubbles: true
+                        })
+                        this.data.loadingNow = true
+                    }
+
+
+                }
+            }
+
+        },
+        async Assetsloaded(newVal) {
+
+            if (newVal && this.data.workflowType === 2 && this.data.loadingNow) {
+                const {
+                    p_ending,
+                } = this.data.workflowData
+                let {
+                    p_ar
+                } = this.data.p_arData
+                this.triggerEvent('handleAssetsLoaded', {
+                    handleAssetsLoaded: true,
+                    type: this.template_type
+
+                }, {
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
+                })
+                this.handleTemplate3and4(p_ar.template_type)
+                this.stay_duration = p_ar.stay_duration * 1000
+                this.Transform.setData({
+                    visible: true
+                })
+                if (this.template_type === "模版四") {
+                    await xrframe.handleShadowRotate(this)
+                }
+                await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
+                await this.startAnimatorAndVideo()
+                if (p_ending && p_ending.text) {
+                    await this.StayPageShow()
+                }
+                await this.gyroscope(p_ar)
             }
         }
     },
@@ -59,6 +151,8 @@ Component({
         rotation: [],
         Assetsloaded: false,
         trackerFlag: false,
+        newval2: false,
+        loadingNow: false
 
 
     },
@@ -107,10 +201,11 @@ Component({
 
             xrframe.releaseAssetList(this.scene, this.list)
             await this.stopAnimatorAndVideo()
-
-            this.innerAudioContext2?.stop()
-            this.innerAudioContext2?.destroy()
-            this.innerAudioContext2 = null
+            if (this.innerAudioContext2) {
+                this.innerAudioContext2.stop()
+                this.innerAudioContext2.destroy()
+                this.innerAudioContext2 = null
+            }
             if (this.s) {
                 this.s = null
                 wx.offGyroscopeChange(this.s)
@@ -192,16 +287,14 @@ Component({
                             bubbles: true
                         })
                     }
-
-
                     this.loading = true
                 } else {
                     if (!this.firstFlag) {
                         if (!this.data.Assetsloaded) return
                         await xrframe.handleShadowRotate(this)
-                        this.handleTemplate3and4(this.result.template_type)
+                        this.handleTemplate3and4(this.template_type)
                         // this.stay_duration = this.data.p_arData.p_ar.stay_duration * 1000
-                        await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                        await xrframe.addTemplateTextAnimator(this.template_type, this.scene, this)
 
                         await this.startAnimatorAndVideo()
                         if (this.innerAudioContext2) {
@@ -238,7 +331,7 @@ Component({
 
         },
         async concatAndLoadAssets(result) {
-            if (this.data.workflowType !== 3) {
+            if (this.data.workflowType !== 3 && this.data.workflowType !== 2) {
                 this.triggerEvent('handleAssetsLoaded', {
                     handleAssetsLoaded: false,
                     type: result.template_type
@@ -248,7 +341,7 @@ Component({
                     bubbles: true
                 })
             }
-
+            this.template_type = result.template_type
             // const markerShadow = this.markerShadow = this.scene.getElementById('markerShadow')
             // const markerShadow2 = this.markerShadow2 = this.scene.getElementById('markerShadow2')
             const markerShadow = this.markerShadow
@@ -288,21 +381,26 @@ Component({
                 }
             }
             await Promise.all(promiseList).then(async results => {
+                this.setData({
+                    Assetsloaded: true
+                })
+                if (this.data.workflowType === 2) {
+                    return
+                }
 
-                this.data.Assetsloaded = true
+                this.triggerEvent('handleAssetsLoaded', {
+                    handleAssetsLoaded: true,
+                }, {
+                    composed: true,
+                    capturePhase: false,
+                    bubbles: true
+                })
 
-                    this.triggerEvent('handleAssetsLoaded', {
-                        handleAssetsLoaded: true,
-                    }, {
-                        composed: true,
-                        capturePhase: false,
-                        bubbles: true
-                    })
 
                 // await xrframe.addTemplateTextAnimator(result.template_type, this.scene, this)
 
                 if (this.active && this.data.workflowType === 3) {
-                  
+
                     await xrframe.handleShadowRotate(this)
                     this.handleTemplate3and4(result.template_type)
                     this.stay_duration = result.stay_duration * 1000
@@ -345,24 +443,24 @@ Component({
                 }
 
 
-                if (this.data.workflowType === 2) {
-                    if (result.template_type === "模版四") {
-                        await xrframe.handleShadowRotate(this)
-                    }
-                    this.handleTemplate3and4(result.template_type)
+                // if (this.data.workflowType === 2) {
+                //     if (result.template_type === "模版四") {
+                //         await xrframe.handleShadowRotate(this)
+                //     }
+                //     this.handleTemplate3and4(result.template_type)
 
-                    if (this.innerAudioContext2) {
-                        this.innerAudioContext2.play()
-                        this.triggerEvent('bgcAudioFlagChange', {
-                            bgc_AudioFlag: true
-                        })
-                    }
-                    await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
+                //     if (this.innerAudioContext2) {
+                //         this.innerAudioContext2.play()
+                //         this.triggerEvent('bgcAudioFlagChange', {
+                //             bgc_AudioFlag: true
+                //         })
+                //     }
+                //     await xrframe.addTemplateTextAnimator(this.result.template_type, this.scene, this)
 
-                    this.startAnimatorAndVideo()
+                //     this.startAnimatorAndVideo()
 
-                    return
-                }
+                //     return
+                // }
                 this.setData({
                     trackerFlag: true
                 })
@@ -410,16 +508,14 @@ Component({
         },
         handleAssetsProgress: function ({
             detail
-        }) { },
+        }) {},
         handleAssetsLoaded: function ({
             detail
-        }) { },
+        }) {},
         async typeScan() {
-            console.log(this.scene,'scene')
             let {
                 p_ar
             } = await xrframe.recognizeCigarette(this.scene)
-            console.log(!!!p_ar,'ad')
             if (!!!p_ar) return
             const {
                 front_image_url,
@@ -459,6 +555,15 @@ Component({
                 visible: false
             })
             if (this.data.workflowType === 1) {
+                if (!this.data.p_scanFlag)  return
+                if(!this.data.loadingNow){
+                    this.setData({
+                        trackerFlag: true,
+                        loadingNow: true,
+                    })
+                    await this.typeScan()
+                }
+                   
 
             } else if (this.data.workflowType === 2) {
 
@@ -470,36 +575,26 @@ Component({
                 let {
                     p_ar
                 } = this.data.p_arData
-                // p_ar.gltf_list[0].file_url = "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/95ec4c699d6cd08ce2a7b477ad340cfa.glb"
-                // p_ar.model.file_url = "http://arp3.arsnowslide.com/undefined/434494315640082432/undefined/123123.gltf"
                 if (p_guide && p_scan && p_ending && Object.keys(p_ar).length > 0) {
-                    let timer2 = this.timer2 = setTimeout(async () => {
-                        this.handleTemplate3and4(p_ar.template_type)
+                    this.index = 1
+                    await this.concatAndLoadAssets(p_ar)
 
-                        await this.concatAndLoadAssets(p_ar)
-                        this.stay_duration = p_ar.stay_duration * 1000
-                        this.Transform.setData({
-                            visible: true
-                        })
-                        await this.startAnimatorAndVideo()
-                        if (p_ending && p_ending.text) {
-                            await this.StayPageShow()
-                        }
-                        await this.gyroscope(p_ar)
-                        clearTimeout(timer2)
-                    }, 3000);
 
                 } else if (p_scan) {
                     return
                 } else if (Object.keys(p_ar).length > 0) {
-                    // 
-                    this.handleTemplate3and4(p_ar.template_type)
-                    await this.concatAndLoadAssets(p_ar)
-                    this.Transform.setData({
-                        visible: true
+                    this.triggerEvent('handleAssetsLoaded', {
+                        handleAssetsLoaded: false,
+                        type: p_ar.template_type
+                    }, {
+                        composed: true,
+                        capturePhase: false,
+                        bubbles: true
                     })
-                    await this.startAnimatorAndVideo()
-                    await this.gyroscope(p_ar)
+                    this.setData({
+                        loadingNow: true
+                    })
+                    await this.concatAndLoadAssets(p_ar)
 
                 }
             } else if (this.data.workflowType === 3) {

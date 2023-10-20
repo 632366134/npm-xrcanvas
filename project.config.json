@@ -35,9 +35,6 @@
         "disableUseStrict": false,
         "minifyWXML": true,
         "showES6CompileOption": false,
-        "useCompilerPlugins": [
-            "typescript"
-        ],
         "ignoreDevUnusedFiles": false,
         "ignoreUploadUnusedFiles": true,
         "useStaticServer": true,

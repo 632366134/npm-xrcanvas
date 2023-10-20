@@ -22,6 +22,11 @@ import {
 import {
     generateGrowKeyFrame
 } from './grow';
+const STATE = {
+    NONE: -1,
+    MOVE: 0,
+    ZOOM_OR_PAN: 1
+}
 
 const FSM = wx.getFileSystemManager();
 let i = 0
@@ -94,8 +99,7 @@ export const handleXRCompatibility = () => {
         SDK: '3.0.0'
     };
     const info = wx.getSystemInfoSync();
-    const systemType = info.system.split(' ')[0];
-    ;
+    const systemType = info.system.split(' ')[0];;
     const isNotSupported = {
         device: isNotSupportedDevice(info.model),
         SDKVersion: isVersionTooLow(info.SDKVersion, lowestVersion.SDK),
@@ -169,6 +173,7 @@ export const saveImage = async (scene) => {
 export const recognizeCigarette = (scene, that = null) => {
     return new Promise(async (resolve) => {
         try {
+            console.log(scene, 'scene')
             if (!scene._components) return resolve('break');
             if (!YUVUtils.incompatibleDevice(scene)) {
                 let rgbData = YUVUtils.arRawDataToRGB(scene);
@@ -314,8 +319,6 @@ export const loadENVObject = async (scene, that) => {
 export const loadModelObject = async (scene, modelData, animatorList, markerShadow, that) => {
     try {
         await scene.assets.releaseAsset('gltf', modelData.uid);
-
-
         if (!modelData.file_url) throw '无资源URL';
         let model = await scene.assets.loadAsset({
             type: 'gltf',
@@ -385,9 +388,9 @@ export const loadVideoObject = async (scene, videoData, videoList, markerShadow,
         if (!scene) return;
         let material = scene.createMaterial(
             await scene.assets.getAsset('effect', videoData.effect || 'standard'), {
-            // await scene.assets.getAsset('effect', 'standard'), {
-            u_baseColorMap: video.texture,
-        }
+                // await scene.assets.getAsset('effect', 'standard'), {
+                u_baseColorMap: video.texture,
+            }
         );
         if (!scene) return;
         const node = scene.createElement(XRFrameSystem.XRMesh);
@@ -433,8 +436,8 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         if (!scene) return;
         let material = await scene.createMaterial(
             scene.assets.getAsset('effect', 'standard'), {
-            u_baseColorMap: image.value,
-        }
+                u_baseColorMap: image.value,
+            }
         );
         material.renderQueue = 2500;
 
@@ -476,7 +479,7 @@ export const loadImageObject = async (scene, imageData, markerShadow, textList, 
         await addObjectToShadow(markerShadow, node, imageData['3d_info'], true, that);
 
         if (!textList) return
-        if (that.result.template_type === "模版一" && imageData.hasOwnProperty("location") && imageData.location === "right") return
+        if (that.template_type === "模版一" && imageData.hasOwnProperty("location") && imageData.location === "right") return
         if (!isNaN(imageData.location)) {
             that.textList[imageData.location] = {
                 node,
@@ -520,8 +523,8 @@ export const replaceMaterial = async (scene, imageData, markerShadow, textList, 
         if (!scene) return;
         let material = await scene.createMaterial(
             scene.assets.getAsset('effect', 'standard'), {
-            u_baseColorMap: image.value,
-        }
+                u_baseColorMap: image.value,
+            }
         );
         material.renderQueue = 2500;
         material.alphaMode = "BLEND";
@@ -650,7 +653,8 @@ export const addTemplateTextAnimator = async (template, scene, that) => {
         }
 
         for (let [index, item] of that.textList.entries()) {
-            let animator = item.node.addComponent(XRFrameSystem.Animator);
+
+            let animator = item.node.getComponent(XRFrameSystem.Animator) ?? item.node.addComponent(XRFrameSystem.Animator);
 
             switch (template) {
                 case '模版一':
@@ -719,7 +723,7 @@ export const resumeAnimatorAndVideo = (that) => {
         console.error('XR-FRAME: 场景恢复错误: ', err);
     }
 }
-export const stopAnimatorAndVideo = async (that, release) => {
+export const stopAnimatorAndVideo = (that, release) => {
     try {
         for (let animator of that.animatorList) {
             animator.animator.stop();
@@ -736,57 +740,155 @@ export const stopAnimatorAndVideo = async (that, release) => {
 export const handleShadowRotate = (that, type = undefined) => {
     try {
         if (!type) {
-            type = that.data.p_arData.p_ar?.template_type
+            type = that.template_type
         }
+        const {
+            width,
+            height
+        } = that.scene
+        // 旋转缩放相关配置
+        that.radius = (width + height) / 4
+        that.rotateSpeed = 5
+
         that.handleTouchStart = (event) => {
-            if (event.touches.length !== 1) return;
-            that.setData({
-                touch: {
-                    pageX: event.touches[0].pageX,
-                    pageY: event.touches[0].pageY,
+                that.mouseInfo = {
+                    startX: 0,
+                    startY: 0,
+                    isDown: false,
+                    startPointerDistance: 0,
+                    state: STATE.NONE
                 }
-            });
-            that.scene.event.add('touchmove', that.handleTouchMove.bind(that));
-            that.scene.event.addOnce('touchend', that.handleTouchEnd.bind(that));
-        }
-        that.handleTouchMove = (event) => {
+                that.mouseInfo.isDown = true
 
-            if (event.touches.length !== 1) return;
-            const xMove = event.touches[0].pageX - that.data.touch.pageX;
-            const yMove = event.touches[0].pageY - that.data.touch.pageY;
-            that.setData({
-                touch: {
-                    pageX: event.touches[0].pageX,
-                    pageY: event.touches[0].pageY,
+                const touch0 = event.touches[0]
+                const touch1 = event.touches[1]
+
+                if (event.touches.length === 1) {
+                    that.mouseInfo.startX = touch0.pageX
+                    that.mouseInfo.startY = touch0.pageY
+                    that.mouseInfo.state = STATE.MOVE
+                } else if (event.touches.length === 2) {
+                    const dx = (touch0.pageX - touch1.pageX)
+                    const dy = (touch0.pageY - touch1.pageY)
+                    that.mouseInfo.startPointerDistance = Math.sqrt(dx * dx + dy * dy)
+                    that.mouseInfo.startX = (touch0.pageX + touch1.pageX) / 2
+                    that.mouseInfo.startY = (touch0.pageY + touch1.pageY) / 2
+                    that.mouseInfo.state = STATE.ZOOM_OR_PAN
                 }
-            });
-            if (that.data.workflowType === 2 && type === "模版四") {
-                shadowRotateY(xMove, that.markerShadow2);
 
-            } else if (that.data.workflowType === 4 && type !== "模版四") {
-                shadowPositionY(yMove, that.markerShadow);
-                shadowPositionX(xMove, that.markerShadow);
+                that.scene.event.add('touchmove', that.handleTouchMove.bind(that))
+                that.scene.event.addOnce('touchend', that.handleTouchEnd.bind(that))
 
-            } else if (that.data.workflowType === 4 && type === "模版四") {
-                // shadowRotateY(xMove, that.markerShadow);
-                // shadowRotateX(yMove, that.markerShadow);
+            },
+            that.handleTouchMove = (event) => {
+                const mouseInfo = that.mouseInfo
+                if (!mouseInfo.isDown) {
+                    return
+                }
 
-            } else if (that.data.workflowType === 3 && type === "模版四") {
-                shadowRotateY(xMove, that.markerShadow2);
+                switch (mouseInfo.state) {
+                    case STATE.MOVE:
+                        if (event.touches.length === 1) {
 
-            } else {
+                            const xMove = event.touches[0].pageX - that.mouseInfo.startX;
+                            const yMove = event.touches[0].pageY - that.mouseInfo.startY;
+                            that.mouseInfo.startX = event.touches[0].pageX
+                            that.mouseInfo.startY = event.touches[0].pageY
+                            if (that.data.workflowType === 2 && type === "模版四") {
+                                shadowRotateY(xMove, that.markerShadow2);
 
+                            } else if (that.data.workflowType === 4 && type !== "模版四") {
+                                shadowPositionY(yMove, that.markerShadow);
+                                shadowPositionX(xMove, that.markerShadow);
+
+                            } else if (that.data.workflowType === 4 && type === "模版四") {
+                                // shadowRotateY(xMove, that.markerShadow);
+                                // shadowRotateX(yMove, that.markerShadow);
+
+                            } else if (that.data.workflowType === 3 && type === "模版四") {
+                                shadowRotateY(xMove, that.markerShadow2);
+
+                            } else {
+
+                            }
+                        } else if (event.touches.length === 2) {
+                            // 支持单指变双指，兼容双指操作但是两根手指触屏时间不一致的情况
+                            that.scene.event.remove('touchmove', that.handleTouchMove)
+                            that.scene.event.remove('touchend', that.handleTouchEnd)
+                            that.handleTouchStart(event)
+                        }
+                        break
+                    case STATE.ZOOM_OR_PAN:
+                        if (event.touches.length === 1) {
+                            // 感觉双指松掉一指的行为还是不要自动切换成旋转了，实际操作有点奇怪
+                        } else if (event.touches.length === 2) {
+                            that.handleZoomOrPan(event, that.markerShadow)
+                        }
+                        break
+                    default:
+                        break
+                }
             }
-        }
+
         that.handleTouchEnd = (event) => {
+            that.mouseInfo.isDown = false
+            that.mouseInfo.state = STATE.NONE
+
             that.scene.event.remove('touchmove', that.handleTouchMove)
-            that.scene.event.addOnce('touchstart', that.handleTouchStart);
+            that.scene.event.addOnce('touchstart', that.handleTouchStart)
         }
-        that.scene.event.addOnce('touchstart', that.handleTouchStart.bind(that));
+
+        that.handleRotate = (event) => {
+            const x = event.touches[0].pageX
+            const y = event.touches[0].pageY
+
+            const {
+                startX,
+                startY
+            } = that.mouseInfo
+
+            const theta = (x - startX) / that.radius * -that.rotateSpeed
+            const phi = (y - startY) / that.radius * -that.rotateSpeed
+            if (Math.abs(theta) < .01 && Math.abs(phi) < .01) {
+                return
+            }
+            that.gltfItemTRS.rotation.x -= phi
+            that.gltfItemSubTRS.rotation.y -= theta
+            that.mouseInfo.startX = x
+            that.mouseInfo.startY = y
+        }
+
+        that.handleZoomOrPan = (event, node) => {
+            const touch0 = event.touches[0]
+            const touch1 = event.touches[1]
+
+            const dx = (touch0.pageX - touch1.pageX)
+            const dy = (touch0.pageY - touch1.pageY)
+            const distance = Math.sqrt(dx * dx + dy * dy)
+
+            let deltaScale = distance - that.mouseInfo.startPointerDistance
+            that.mouseInfo.startPointerDistance = distance
+            that.mouseInfo.startX = (touch0.pageX + touch1.pageX) / 2
+            that.mouseInfo.startY = (touch0.pageY + touch1.pageY) / 2
+            if (deltaScale < -2) {
+                deltaScale = -2
+            } else if (deltaScale > 2) {
+                deltaScale = 2
+            }
+
+            const s = deltaScale * 0.02 + 1
+            // 缩小
+            const trs = node.getComponent(XRFrameSystem.Transform);
+            trs.scale.x *= s
+            trs.scale.y *= s
+            trs.scale.z *= s
+        }
+        that.scene.event.addOnce('touchstart', that.handleTouchStart);
     } catch (err) {
         console.error('XR旋转手势处理错误: ', err);
     }
 }
+
 export const shadowRotateX = (deltaY, markerShadow) => {
     const transform = markerShadow.getComponent(XRFrameSystem.Transform);
     transform.rotation.x += deltaY / 200;
@@ -901,7 +1003,7 @@ export const releaseAssetList = (scene, list) => {
                 } else if (obj.type === 'image') {
                     scene.assets.releaseAsset('texture', obj.uid);
                     scene.assets.releaseAsset('material', `material-${obj.uid}`);
-                } else { }
+                } else {}
             }
             scene.assets.releaseAsset('env-data', 'env1');
         } catch (error) {

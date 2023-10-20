@@ -167,13 +167,13 @@ Page({
         // const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
         // const result = this.result = await xrframe.concatArrayToObjects(this.data.p_arData.p_ar, true)
         // await node2.setDefaultObjectsData(result)
-
+        const node2 = this.node2 = this.selectComponent('#npm-xrframe').selectComponent('#canvas-loading')
     },
     removeFromScene(uid) {
         if (this.result.length === 0) return
 
-        // this.node2.removeFromScene(this.result[this.i++].uid)
-        this.node2.hideChildVisible(this.result[this.i++].uid)
+        this.node2.removeFromScene(this.result[this.i++].uid)
+        // this.node2.hideChildVisible(this.result[this.i++].uid)
 
     },
     async setDefaultObjectsData() {
@@ -200,7 +200,7 @@ Page({
 
 
         if (data) {
-            await this.node2.addToScene([data], this.data.p_arData.p_ar.template_type)
+            await this.node2.addToScene(data)
         }
 
     },

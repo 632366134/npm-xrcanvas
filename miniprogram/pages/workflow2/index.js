@@ -12,7 +12,8 @@ Page({
                 "uid": "ml-cj0sjss9aqpn3j2l3vsg",
                 "name": "徽商加载2",
                 "image_uid": "f-cj0sjr49aqpn3j2l3vr0",
-                "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/14f9785996fbaf38de6242a06b586232.jpeg"
+                "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/14f9785996fbaf38de6242a06b586232.jpeg",
+                "duration": "5"
             },
             "p_scan_uid": "",
             "p_scan": {
@@ -106,16 +107,17 @@ Page({
         XRHeight: 400,
         XRHeight: 400
     },
-    async onLoad({ p_arData }) {
+    async onLoad({
+        p_arData
+    }) {
         p_arData = JSON.parse(p_arData)
 
         this.setData({
             flag: true,
-            p_arData
+            p_arData,
         })
     },
-    onUnload() {
-    },
+    onUnload() {},
     async loadingChange({
         detail
     }) {

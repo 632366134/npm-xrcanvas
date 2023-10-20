@@ -99,7 +99,6 @@ Component({
                     p_scan,
                     p_ending,
                 } = this.data.workflowData
-                console.log(this.data.workflowData)
                 const {
                     p_ar
                 } = this.data.p_arData
@@ -114,14 +113,14 @@ Component({
                         this.setData({
                             p_scanFlag: true,
                         })
-                    }else {
+                    } else {
                         await xrframe.getCameraAuthorize()
                         this.setData({
                             p_scanFlag: true,
                             xrShow: true
                         })
                     }
-                  
+
                 } else if (p_ar && Object.keys(p_ar).length > 0) {
                     // const {
                     //     imageUrl,
@@ -177,6 +176,11 @@ Component({
 
         },
         detached() {
+            if (this.innerAudioContext) {
+                this.innerAudioContext.stop()
+                this.innerAudioContext = null
+            }
+
             // this.setData({
             //     xrShow: false,
             //     loadingShow:false
@@ -190,7 +194,7 @@ Component({
             } = this.data.workflowData
 
             if (p_guide) {
-                this.guideShow(p_guide)
+                this.type1guideShow(p_guide)
             } else {
                 this.setData({
                     p_scanFlag: true,
@@ -237,23 +241,61 @@ Component({
                 this.innerAudioContext.src = p_guide.audio_url
                 this.innerAudioContext.play() // 播放
                 const list = () => {
-                    this.innerAudioContext.offEnded(list)
-                    this.innerAudioContext.stop()
                     this.innerAudioContext.destroy()
                 }
-                this.innerAudioContext.onEnded(list)
+                this.innerAudioContext.onStop(list)
+
             }
-            timer = setTimeout(() => {
+            let timer = setTimeout(() => {
+                clearTimeout(timer)
+
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
                 })
-                // const node =this.selectComponent('#xr-canvas')
-                // node.trackFlagFun(true)
-                clearTimeout(timer)
+
             }, p_guide.duration * 1000);
         },
-        guideShow(p_guide, flag = false) {
+        async guideShow(p_guide, flag = false) {
+            this.setData({
+                p_guideFlag: true,
+                xrShow: !flag
+            })
+            let list
+            if (p_guide.audio_url) {
+                this.innerAudioContext = wx.createInnerAudioContext({
+                    useWebAudioImplement: true // 是否使用 WebAudio 作为底层音频驱动，默认关闭。对于短音频、播放频繁的音频建议开启此选项，开启后将获得更优的性能表现。由于开启此选项后也会带来一定的内存增长，因此对于长音频建议关闭此选项
+                })
+                this.innerAudioContext.src = p_guide.audio_url
+                this.innerAudioContext.play() // 播放
+                // this.innerAudioContext.loop = true
+
+                list = () => {
+                    this.innerAudioContext.destroy()
+                }
+                this.innerAudioContext.onStop(list)
+            }
+            if (flag) return
+            let timer = setTimeout(() => {
+                clearTimeout(timer)
+                this.innerAudioContext && this.innerAudioContext.stop();
+                this.setData({
+                    p_guideFlag: false,
+                    p_scanFlag: true,
+                });
+                timer = setTimeout(() => {
+                    clearTimeout(timer)
+                    this.setData({
+                        p_scanFlag: false,
+                    });
+
+                }, 3000);
+            }, p_guide.duration * 1000);
+
+
+
+        },
+        type1guideShow(p_guide, flag = false) {
             this.setData({
                 p_guideFlag: true,
                 xrShow: !flag
@@ -267,20 +309,18 @@ Component({
                 // this.innerAudioContext.loop = true
 
                 const list = () => {
-                    this.innerAudioContext.offEnded(list)
-                    this.innerAudioContext.stop()
                     this.innerAudioContext.destroy()
                 }
-                this.innerAudioContext.onEnded(list)
+                this.innerAudioContext.onStop(list)
             }
             if (flag) return
             let timer = setTimeout(async () => {
-                list &&list()
+                clearTimeout(timer)
+
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
                 })
-                clearTimeout(timer)
             }, p_guide.duration * 1000);
         },
         loadingChange({
@@ -294,20 +334,36 @@ Component({
                     duration,
                     progressColor
                 } = this.data.loadingData[detail.type]
+                if (this.data.workflowType === 2) {
+                    this.setData({
+                        p_loadingFlag: !detail.handleAssetsLoaded,
+                        image_url: imageUrl,
+                        textDuration: duration,
+                        progressColor
+                    })
+                } else {
+                    this.setData({
+                        p_loadingFlag: !detail.handleAssetsLoaded,
+                        p_scanFlag: false,
+                        image_url: imageUrl,
+                        textDuration: duration,
+                        progressColor
+                    })
+                }
 
-                this.setData({
-                    p_loadingFlag: !detail.handleAssetsLoaded,
-                    p_scanFlag: false,
-                    image_url: imageUrl,
-                    textDuration: duration,
-                    progressColor
-                })
 
             } else {
-                this.setData({
-                    p_loadingFlag: !detail.handleAssetsLoaded,
-                    p_scanFlag: false,
-                })
+                if (this.data.workflowType === 2) {
+                    this.setData({
+                        p_loadingFlag: !detail.handleAssetsLoaded,
+                    })
+                } else {
+                    this.setData({
+                        p_loadingFlag: !detail.handleAssetsLoaded,
+                        p_scanFlag: false,
+                    })
+                }
+
 
             }
 
@@ -423,6 +479,6 @@ Component({
         move() {
 
         },
-        catchtap() { }
+        catchtap() {}
     }
 })
