@@ -212,7 +212,8 @@ Component({
             this.textList = this.textList.filter(v => v.uid !== uid)
 
         },
-        async saveSceneAsImage() {
+        async captureCreatingScene() {
+            this.resetPosition(this.template_type)
             xrframe.pauseAnimatorAndVideo(this, 0.99)
             const result = await xrframe.saveSceneAsImage(this.scene)
             await xrframe.resumeAnimatorAndVideo(this)

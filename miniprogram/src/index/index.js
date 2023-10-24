@@ -61,6 +61,7 @@ Component({
         event_image: '',
         event_url: '',
         bgc_AudioFlag: false,
+        resetPositionFlag: false,
         loadingData: {
             '模版一': {
                 imageUrl: '../assets/type1.png',
@@ -98,13 +99,14 @@ Component({
                     p_guide,
                     p_scan,
                     p_ending,
-                } = this.data.workflowData
-                const {
                     p_ar
-                } = this.data.p_arData
-                if (p_guide && p_scan && p_ending && p_ar && Object.keys(p_ar).length > 0) {
-                    if (!await this.arCameraShow()) return
-                    await xrframe.getCameraAuthorize()
+                } = this.data.workflowData
+                if (p_guide && p_scan && p_ar && Object.keys(p_ar).length > 0) {
+                   
+                    if (await this.arCameraShow()) {
+                        await xrframe.getCameraAuthorize()
+
+                    }
                     this.guideShow(p_guide)
                 } else if (p_guide) {
                     this.guideShow(p_guide, true)
@@ -112,6 +114,7 @@ Component({
                     if (!await this.arCameraShow()) {
                         this.setData({
                             p_scanFlag: true,
+                            unSupportFlag: true
                         })
                     } else {
                         await xrframe.getCameraAuthorize()
@@ -127,17 +130,21 @@ Component({
                     //     duration,
                     //     progressColor
                     // } = this.data.loadingData[p_ar.template_type]
-                    if (!await this.arCameraShow()) return
+                    if (!await this.arCameraShow()) {
+                        this.setData({
+                            unSupportFlag2: true,
+                            unSupport: this.xrSupport
+                        })
+                    } else {
+                        await xrframe.getCameraAuthorize()
+                        this.setData({
+                            xrShow: true,
+                            resetPositionFlag: true
+                        })
+                    }
 
-                    await xrframe.getCameraAuthorize()
-                    this.setData({
-                        xrShow: true,
-                        // p_loadingFlag: true,
-                        // image_url: imageUrl,
-                        // textDuration: duration,
-                        // progressColor
-                    })
-                } else if (p_ending) {
+
+                } else if (p_ending && p_ending.uid) {
                     this.stayPage()
                 } else {
                     throw '暂无数据'
@@ -154,21 +161,12 @@ Component({
                 await this.getWorkList()
             } else if (this.data.workflowType === 4) {
                 await xrframe.initXRFrame(this, this.data.XRWidth, this.data.XRHeight)
-                // if (!await xrframe.handleXRSupport(this)) return
-
-                // let screenListRaw = this.data.p_arData.p_ar.screen_list
-                // delete this.data.p_arData.p_ar.screen_list
+                
                 this.setData({
                     loadingShow: true,
-                    // p_arData: this.data.p_arData,
-                    // screenListRaw
+                   
                 })
-                // screenListRaw[1].file_url="https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/images/18ead05029aa0d145111ff37f7843472.png"
-                // setTimeout(() => {
-                //     this.setData({
-                //         screenListRaw
-                //     })
-                // }, 8000);
+            
             } else {
 
             }
@@ -188,6 +186,28 @@ Component({
         }
     },
     methods: {
+        supportCheck() {
+            if (this.xrSupport) {
+                this.setData({
+                    unSupport: this.xrSupport,
+                    unSupportFlag: true
+                })
+                let timer = setTimeout(() => {
+                    clearTimeout(timer)
+                    if (this.data.workflowData.p_ending && this.data.workflowData.p_ending.uid) {
+                        this.setData({
+                            unSupportFlag: false,
+                        })
+                        this.stayPage()
+                    }
+
+                }, 3 * 1000);
+            }
+        },
+        resetPositionBtn() {
+            const node = this.selectComponent('#xr-canvas')
+            node.resetPosition()
+        },
         async getWorkList() {
             const {
                 p_guide
@@ -207,12 +227,16 @@ Component({
             return await xrframe.handleXRSupport(this)
         },
         async workflow1Fun() {
+            this.setData({
+                xrShow: true
+            })
             const {
                 result
             } = await workflow()
             this.setData({
-                workflowData: result
+                workflowData: result,
             })
+
             const {
                 p_guide
             } = result
@@ -222,8 +246,6 @@ Component({
             } else {
                 this.setData({
                     p_scanFlag: true,
-                    xrShow: true
-
                 })
             }
 
@@ -231,8 +253,6 @@ Component({
         type3guideShow(p_guide) {
             this.setData({
                 p_guideFlag: true,
-                xrShow: true
-
             })
             if (p_guide.audio_url) {
                 this.innerAudioContext = wx.createInnerAudioContext({
@@ -259,7 +279,7 @@ Component({
         async guideShow(p_guide, flag = false) {
             this.setData({
                 p_guideFlag: true,
-                xrShow: !flag
+                xrShow: this.xrSupport ? false : !flag
             })
             let list
             if (p_guide.audio_url) {
@@ -282,12 +302,22 @@ Component({
                 this.setData({
                     p_guideFlag: false,
                     p_scanFlag: true,
+                    unSupportFlag: this.xrSupport ? true : false
                 });
                 timer = setTimeout(() => {
                     clearTimeout(timer)
-                    this.setData({
-                        p_scanFlag: false,
-                    });
+                    if (this.xrSupport) {
+                        this.setData({
+                            p_scanFlag: false,
+                        });
+                        this.supportCheck()
+                    } else {
+                        this.setData({
+                            p_scanFlag: false,
+                            resetPositionFlag: true
+                        });
+                    }
+
 
                 }, 3000);
             }, p_guide.duration * 1000);
@@ -399,7 +429,7 @@ Component({
 
                 })
             }
-            if (workflowData.p_ending) {
+            if (workflowData.p_ending && workflowData.p_ending.uid) {
                 var article = `<div>${workflowData.p_ending.text}</div>`;
                 var that = this;
                 WxParse.wxParse('article', 'html', article, that);

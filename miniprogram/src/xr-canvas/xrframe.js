@@ -62,8 +62,11 @@ export const getCameraAuthorize = () => {
 export const handleXRSupport = (that) => {
     let xrSupport = handleXRCompatibility();
     if (xrSupport !== true) {
+        that.xrSupport = xrSupport
+        if (that.data.workflowType === 2) return false
         that.setData({
             unSupport: xrSupport,
+            unSupportFlag2:true
         });
         return false
     } else {
@@ -92,6 +95,7 @@ export const initXRFrame = (that, width, height) => {
 }
 
 export const handleXRCompatibility = () => {
+    // return '此设备暂不支持AR功能'
     const notSupportedList = ['iPhone 12/13 (Pro)'];
     const lowestVersion = {
         iOS: '8.0.36',
@@ -173,7 +177,6 @@ export const saveImage = async (scene) => {
 export const recognizeCigarette = (scene, that = null) => {
     return new Promise(async (resolve) => {
         try {
-            console.log(scene, 'scene')
             if (!scene._components) return resolve('break');
             if (!YUVUtils.incompatibleDevice(scene)) {
                 let rgbData = YUVUtils.arRawDataToRGB(scene);
@@ -808,7 +811,11 @@ export const handleShadowRotate = (that, type = undefined) => {
                             } else if (that.data.workflowType === 3 && type === "模版四") {
                                 shadowRotateY(xMove, that.markerShadow2);
 
-                            } else {
+                            }else if (that.data.workflowType === 1 && type === "模版四"){
+                                shadowRotateY(xMove, that.markerShadow2);
+
+                            }
+                             else {
 
                             }
                         } else if (event.touches.length === 2) {

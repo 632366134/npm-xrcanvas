@@ -30,11 +30,7 @@ Page({
                 "image_url": "https://oss-debug.aimall-tech.com/aimall-tob-anhui-ar/others/14f9785996fbaf38de6242a06b586232.jpeg"
             },
             "p_ending_uid": "",
-            "p_ending": {
-                "uid": "me-cj129r49aqplk7mqgjgg",
-                "name": "123123123123",
-                "text": "<p><br></p>"
-            },
+            "p_ending": null,
             "cigarettes": [{
                     "uid": "",
                     "sku": "黄山(徽商新概念细支)",
@@ -111,10 +107,10 @@ Page({
         p_arData
     }) {
         p_arData = JSON.parse(p_arData)
-
+        this.data.workflowData.p_ar = p_arData.p_ar
         this.setData({
             flag: true,
-            p_arData,
+            workflowData:this.data.workflowData,
         })
     },
     onUnload() {},

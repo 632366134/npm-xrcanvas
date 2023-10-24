@@ -14,9 +14,9 @@ Page({
         XRHeight: 400
     },
     async onLoad() {
-        const {
-            result
-        } = await getArList("10,1")
+        // const {
+        //     result
+        // } = await getArList("10,1")
         this.setData({
             flag: true
         })

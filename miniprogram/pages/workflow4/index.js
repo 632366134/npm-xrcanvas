@@ -183,11 +183,12 @@ Page({
 
     },
     async captureCreatingScene() {
-        this.resetPosition()
-        const url = await this.node2.saveSceneAsImage()
+        const url = await this.node2.captureCreatingScene()
         this.setData({
             url
         })
+        
+        
     },
     resetPosition() {
         this.node2.resetPosition(this.data.p_arData.p_ar.template_type)
